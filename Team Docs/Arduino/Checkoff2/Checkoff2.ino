@@ -32,8 +32,8 @@ String runCommand(String command);
 String getStatus();
 String runSensorCheck();
 String checkLimitSwitches();
-int getRightLimit();
-int getLeftLimit();
+String getRightLimit();
+String getLeftLimit();
 DebouncedRead leftLimit;
 DebouncedRead rightLimit;
 
@@ -147,7 +147,7 @@ String setForwardSpeed(long speed)
 String setRightSpeed(long speed)
 {
   int direction = (speed > 0) ? 1 : 0;
-  analogWrite(right_speed, speed);
+  analogWrite(right_speed, abs(speed));
   digitalWrite(right_direction, direction);
   return "302:" + String(speed);
 }
@@ -155,7 +155,7 @@ String setRightSpeed(long speed)
 String setLeftSpeed(long speed)
 {
   int direction = (speed > 0) ? 1 : 0;
-  analogWrite(left_speed, speed);
+  analogWrite(left_speed, abs(speed));
   digitalWrite(left_direction, direction);
   return "303:" + String(speed);
 }
