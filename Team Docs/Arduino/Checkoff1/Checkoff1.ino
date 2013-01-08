@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include "debouncedRead.h"
 
 // Pins
 #define left_speed 2
@@ -12,7 +11,6 @@
 
 // Commands
 #define cStatus 201
-#define cReadIR1 202
 #define cForward 301
 
 /* Response Codes
@@ -27,12 +25,6 @@ String runCommand(String command);
 
 // Sensors
 String getStatus();
-String runSensorCheck();
-String checkLimitSwitches();
-int getRightLimit();
-int getLeftLimit();
-DebouncedRead leftLimit;
-DebouncedRead rightLimit;
 
 // Motors
 String setForwardSpeed(long speed);
@@ -51,10 +43,6 @@ void setup()
   pinMode(right_speed, OUTPUT);
   pinMode(right_direction, OUTPUT);
   
-  // Set Limit Switches
-  rightLimit = DebouncedRead(right_limit);
-  leftLimit = DebouncedRead(left_limit);
-  
   Serial.println("\n100:Ready");
 }
 
@@ -63,12 +51,7 @@ void loop()
   String command = "";
   while(true)
   {
-    while (!Serial.available())
-    {
-      String message;
-      if ((message = runSensorCheck()).length() > 0)
-        Serial.println(message);
-    }
+    while (!Serial.available());
     char c = Serial.read();
     if (c == '\n') break;
     command += c;
@@ -94,34 +77,6 @@ String runCommand(String command)
 String getStatus()
 {
   return "401: unimplimented";
-}
-
-String runSensorCheck()
-{
-  String response = "";
-  response += checkLimitSwitches();
-  return response;
-}
-
-String checkLimitSwitches()
-{
-  static boolean hit = false;
-  int left = !leftLimit.read();
-  int right = !rightLimit.read();
-  hit &= left || right;
-  if (hit)
-    return "";
-  if (left || right)
-    hit = true; 
-    setForwardSpeed(0);
-  if (left && right)
-    return "101:left and right";
-  else if (right)
-    return "102:right";
-  else if (left)
-    return "103:left";
-  else
-    return "";
 }
 
 String setForwardSpeed(long speed)

@@ -11,12 +11,15 @@
 #define right_limit 53
 
 // Commands
+#define cAllStop 911
 #define cStatus 201
 #define cReadIR1 202
 #define cForward 301
+#define cRightSpeed 302
+#define cLeftSpeed 303
 
 /* Response Codes
-  #00: Ready to accept commands
+  100: Ready to accept commands
   101: Right and left limit switches hit
   102: Right limit switch hit
   103: Left limit switch hit
@@ -36,6 +39,8 @@ DebouncedRead rightLimit;
 
 // Motors
 String setForwardSpeed(long speed);
+String setRightSpeed(long speed);
+String setLeftSpeed(long speed);
 
 // Helper
 long asciiToLong(String string);
@@ -44,6 +49,7 @@ void setup()
 {
   Serial.begin(115200);
   pinMode(debug_light, OUTPUT);
+
   
   // Set Motors
   pinMode(left_speed, OUTPUT);
@@ -86,6 +92,10 @@ String runCommand(String command)
     return getStatus();
   case cForward:
     return setForwardSpeed(asciiToLong(parameters));
+  case cRightSpeed: 
+    return setRightSpeed(asciiToLong(parameters));
+  case cLeftSpeed: 
+    return setLeftSpeed(asciiToLong(parameters));
   default:
     return "404: command "+ String(code) + " not found";
   } 
@@ -111,9 +121,11 @@ String checkLimitSwitches()
   hit &= left || right;
   if (hit)
     return "";
-  if (left || right)
+  if (left || right && !hit)
+  {
     hit = true; 
     setForwardSpeed(0);
+  }
   if (left && right)
     return "101:left and right";
   else if (right)
@@ -126,13 +138,26 @@ String checkLimitSwitches()
 
 String setForwardSpeed(long speed)
 {
-  int direction = (speed > 0) ? 1 : 0;
+  setRightSpeed(speed);
+  setLeftSpeed(speed);
   analogWrite(debug_light, speed);
-  analogWrite(left_speed, speed);
+  return "301:" + String(speed);
+}
+
+String setRightSpeed(long speed)
+{
+  int direction = (speed > 0) ? 1 : 0;
   analogWrite(right_speed, speed);
-  digitalWrite(left_direction, direction);
   digitalWrite(right_direction, direction);
-  return "200:" + String(speed) + "\n300:0";
+  return "302:" + String(speed);
+}
+
+String setLeftSpeed(long speed)
+{
+  int direction = (speed > 0) ? 1 : 0;
+  analogWrite(left_speed, speed);
+  digitalWrite(left_direction, direction);
+  return "303:" + String(speed);
 }
 
 long asciiToLong(String string)
