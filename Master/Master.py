@@ -1,4 +1,5 @@
 import serial
+import sys, time
 
 #Codes
 cStatus = "201"
@@ -28,15 +29,21 @@ ball_proximity_th = 10
 forward_speed = 100
 turn_speed = 50
 
+def pole():
+    f = open("coord",'r');
+    val = f.read()
+    f.close();
+    return int(val)
 
-class Master()
+class Master:
 
-    def __init__(self, baud = 9600, x = 0, y = 0):
+    def __init__(self, port_name = None, baud = 9600, x = 0, y = 0):
         self.baud = baud
         self.port = None
         self.state = sBallDemo #sStart
         self.x = x
         self.y = y
+        self.port_name = port_name
             
     def connect(self):
             print "Connecting"
@@ -45,14 +52,23 @@ class Master()
             for i in range(4):
                 try:
                     # Try to create the serial connection
-                    self.port=serial.Serial(port='/dev/ttyACM{0}'.format(i), baudrate=self.baud, timeout=0.5)
+                    if self.port_name:
+                        port_name = self.port_name
+                    
+                    else:
+                        port_name = '/dev/ttyACM{0}'.format(i)
+                
+                    self.port=serial.Serial(port=port_name, baudrate=self.baud, timeout=1)
                     if self.port.isOpen():
                         time.sleep(2) # Wait for Arduino to initialize
                         print "Connected"
                         return True
+        
                 except:
                     # Some debugging prints
-                    print "Arduino not connected on ACM{0}".format(i)
+                    print sys.exc_info()[1]
+                    print "Arduino not connected on : " + port_name
+
             print "Failed to connect"
             return False
 
@@ -60,58 +76,64 @@ class Master()
         self.port.write(message + '\n')
 
     def read(self):
-        message = self.port.readline()
-        if message:
-            return (message[0:3], message[4:])
+        return self.port.readline()[:-1]        
 
-    def sendCommand (self, code, parameter = None)
+    def sendCommand(self, code, parameter = None):
         message = code + ":"
         if parameter != None:
-            message += int(parameter)
+            message += str(parameter)
 
-        print self.port.readline()
+        print "Send: " + message
+        self.write(message)
+                
+        message = self.read()
+        print "Receive: " + message
+        if message:
+            return (message[0:3], message[4:])
         
-    def checkBoolean(self, code)
-        self.write(code)
-        return True if self.read()[1] == '1' else False
+        else:
+            return (None, None)
+    
+        
+    def checkBoolean(self, code):
+        r_code, r_message = self.sendCommand(code)
+        return r_message == '1'
 
-    def turnRight(self, speed = turn_speed)
-        self.command(cRightSpeed, -1*turn_speed)
-        self.command(cLeftSpeed, turn_speed)
+    def turnRight(self, speed = turn_speed):
+        self.sendCommand(cRightSpeed, -1*turn_speed)
+        self.sendCommand(cLeftSpeed, turn_speed)
 
-    def turnLeft(self, speed = turn_speed)
-        self.command(cRightSpeed, turn_speed)
-        self.command(cLeftSpeed, -1*turn_speed)
+    def turnLeft(self, speed = turn_speed):
+        self.sendCommand(cRightSpeed, turn_speed)
+        self.sendCommand(cLeftSpeed, -1*turn_speed)
 
-    def ballDemoState(self, input)
-        if input[kRightLimit] or input[kLeftLimit]:
-            pass
-            sendCommand(kmoveDistance, -12);
-
-        if input[balls]:
-            diff = input[balls] - x
+    def ballDemoState(self, input):
+        if input[kBalls]:
+            print "Demo: Found Ball"
+            diff = input[kBalls] - x
             if diff < ball_proximity_th:
                 sendCommand(cForwardSpeed, forward_speed)
 
-            else if diff > 0:
+            elif diff > 0:
                 self.turnRight()
 
             else:
                 self.turnLeft()
 
         else:
+            print "Demo: Searching"
             self.turnRight()
 
         return self.state
 
-    def startState(self input)
+    def startState(self, input):
         return self.state
 
-    def nextState(self, input)
+    def nextState(self, input):
         state = self.state
         if state == sStart: state = self.startState(input)
-        if state == sBallDemo: state = self.BallDemoState(input)
-        else state = self.state
+        elif state == sBallDemo: state = self.ballDemoState(input)
+        else: state = self.state
 
         if state != self.state:
             print "New State: " + state
@@ -119,21 +141,26 @@ class Master()
         return state
 
     def run(self):
-        self.connect()
+        if not self.connect(): return
         #run CV thread
-        while true:
+        while not "100:" in self.port.readline(): pass
+        while True:
             input = {}
 
             # Check Busy Status
-            input[kBusy] = checkBoolean(cStatus)
+            #input[kBusy] = self.checkBoolean(cStatus)
             
             # Check Limit Switches
-            input[kRightLimit] = checkBoolean(cRightLimit)
-            input[kLeftLimit] = checkBoolean(cLeftLimit)
+            #input[kRightLimit] = self.checkBoolean(cRightLimit)
+            #input[kLeftLimit] = self.checkBoolean(cLeftLimit)
 
             # Check IR Sensors
 
             # Check Image Vision
-            input[kBalls] = self.vision.areBalls()
+            input[kBalls] = poll() #self.vision.areBalls()
 
-            self.state = self.nextState(input) 
+            self.state = self.nextState(input)
+            time.sleep(1)
+
+master = Master("/dev/tty.usbmodemfd131", 115200, 500, 500)
+master.run()

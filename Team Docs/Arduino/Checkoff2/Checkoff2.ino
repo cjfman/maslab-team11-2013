@@ -71,6 +71,7 @@ void loop()
   {
     while (!Serial.available())
     {
+      continue;
       String message;
       if ((message = runSensorCheck()).length() > 0)
         Serial.println(message);
