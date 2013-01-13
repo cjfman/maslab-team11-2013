@@ -144,6 +144,7 @@ class Master:
         if not self.connect(): return
         #run CV thread
         while not "100:" in self.port.readline(): pass
+        print "Starting Main Loop"
         while True:
             input = {}
 
