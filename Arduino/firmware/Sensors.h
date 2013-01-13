@@ -19,4 +19,10 @@ private:
   void setup(int pin, int offset);
 };
 
+void setupGyro();
+int gyroGetX();
+int gyroGetY();
+int gyroGetZ();
+
+
 #endif

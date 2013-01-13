@@ -1,4 +1,6 @@
+#include <Wire.h>
 #include <stdlib.h>
+
 #include "debouncedRead.h"
 #include "Motor.h"
 #include "Sensors.h"
@@ -19,6 +21,9 @@
 #define cRightLimit 202
 #define cLeftLimit 203
 #define cReadIR1 204
+#define cGyroX 220
+#define cGryoY 221
+#define cGyroZ 222
 #define cForward 301
 #define cRightSpeed 302
 #define cLeftSpeed 303
@@ -35,6 +40,7 @@
 */
 
 String runCommand(String command);
+String generateResponse(int code, int value);
 
 // Sensors
 String getStatus();
@@ -71,12 +77,15 @@ void setup()
   // Set IR Sensors
   IR1 = IRSensor(ir_1);
   
-  
+  // Setup IMU
+  Wire.begin();
+  setupGyro();
+    
   // Temp
   pinMode(A14, INPUT);
   pinMode(A13, INPUT);
   
-  Serial.println("\n100:Ready");
+  Serial.println("100:Ready");
 }
 
 void loop()
@@ -84,12 +93,7 @@ void loop()
   String command = "";
   while(true)
   {
-    while (!Serial.available())
-    {
-      //Serial.println("Left: " + String(analogRead(A14)));
-      //Serial.println("Right: " + String(analogRead(A13)));
-      //delay(500);
-    }
+    while (!Serial.available());
     /*{
       String message;
       if ((message = runSensorCheck()).length() > 0)
@@ -104,7 +108,7 @@ void loop()
 
 String runCommand(String command)
 {
-  long code = asciiToLong(command.substring(0, 3));
+  int code = asciiToLong(command.substring(0, 3));
   String parameters = command.substring(4);
   switch(code)
   {
@@ -115,20 +119,31 @@ String runCommand(String command)
   case cForward:
     return setForwardSpeed(asciiToLong(parameters));
   case cRightSpeed: 
-    return "302:" + String(rightMotor.setSpeed(asciiToLong(parameters)));
+    return generateResponse(code, rightMotor.setSpeed(asciiToLong(parameters)));
   case cLeftSpeed: 
-    return "303:" + String(leftMotor.setSpeed(asciiToLong(parameters)));
+    return generateResponse(code, leftMotor.setSpeed(asciiToLong(parameters)));
   case cAutoStop:
     return "304:" + String(auto_stop = (parameters == "true") ? true : false);
   case cRightLimit:
-    return "202:" + String(rightLimit.read());
+    return generateResponse(code, rightLimit.read());
   case cLeftLimit:
-    return "203:" + String(leftLimit.read());
+    return generateResponse(code, leftLimit.read());
   case cReadIR1:
     return "204:" + IR1.readString();
+  case cGyroX:
+    return generateResponse(code, gyroGetX());
+  case cGryoY:
+    return generateResponse(code, gyroGetY());
+  case cGyroZ:
+    return generateResponse(code, gyroGetZ());
   default:
     return "404: command "+ String(code) + " not found";
   } 
+}
+
+String generateResponse(int code, int value)
+{
+  return String(code) + ":" + String(value);
 }
 
 String getStatus()
