@@ -3,6 +3,7 @@
 #include <opencv2/imgproc/imgproc.hpp> 
 #include <iostream>
 #include <stdio.h> 
+#include "cvblob/cvblob.h"
 #include "Ballfinder.h"
 using namespace cv;
 /*
