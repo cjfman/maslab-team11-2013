@@ -44,7 +44,7 @@ int main()
     //cap >> frame;
     //frame=imread("/home/yanni/maslab/ecpu/images/2013-01-07 14.47.29.jpg");
   //  cvtColor(frame, HSV, CV_BGR2HSV, 0);
-    namedWindow("edges",1);
+    //namedWindow("edges",1);
     namedWindow("original",1);
     //namedWindow("blobs", 1);
     int var[6];
