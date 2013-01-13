@@ -23,17 +23,24 @@ kBalls = "balls"
 kBusy = "busy"
 
 #Thresholds
-ball_proximity_th = 10
+ball_proximity_th = 50
+x=320
+y=240
 
-#Speed Constands
+#Speed Constants
 forward_speed = 100
-turn_speed = 50
+turn_speed = 200
 
-def pole():
-    f = open("coord",'r');
-    val = f.read()
-    f.close();
-    return int(val)
+def poll():
+    try:
+        f = open("coord",'r');
+        val = f.read()
+        print "File: " + val
+        f.close();
+        return int(val)
+    except:
+        print sys.exc_info()[1]
+        return None
 
 class Master:
 
@@ -108,11 +115,13 @@ class Master:
         self.sendCommand(cLeftSpeed, -1*turn_speed)
 
     def ballDemoState(self, input):
+        print "Ball Position: " + str(input[kBalls])
         if input[kBalls]:
             print "Demo: Found Ball"
-            diff = input[kBalls] - x
-            if diff < ball_proximity_th:
-                sendCommand(cForwardSpeed, forward_speed)
+            diff = input[kBalls] - self.x
+            print "Position Difference: " + str(diff)
+            if abs(diff) < ball_proximity_th:
+                self.sendCommand(cForwardSpeed, forward_speed)
 
             elif diff > 0:
                 self.turnRight()
@@ -143,8 +152,9 @@ class Master:
     def run(self):
         if not self.connect(): return
         #run CV thread
+        print "waitin for ready signal"
         while not "100:" in self.port.readline(): pass
-        print "Starting Main Loop"
+        print "starting main loop"
         while True:
             input = {}
 
@@ -162,6 +172,7 @@ class Master:
 
             self.state = self.nextState(input)
             time.sleep(1)
+            print "..."
 
-master = Master("/dev/tty.usbmodemfd131", 115200, 500, 500)
+master = Master("/dev/ttyACM0", 115200, x, y)
 master.run()
