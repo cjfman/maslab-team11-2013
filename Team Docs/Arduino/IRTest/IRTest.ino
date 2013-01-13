@@ -6,6 +6,21 @@ void setup()
 
 void loop()
 {
-  Serial.println(2076.0/(analogRead(A15) - 11)/2.54);
+  int reading = analogRead(A15);
+  float calculation = 0;
+  if (reading >= 250)
+  {
+    calculation = 2230.0/reading - .87;
+  } 
+  else if (reading < 250 && reading >= 149)
+  {
+    calculation = 2920.0/reading - 3.83;
+  } 
+  else 
+  {
+    calculation = 5660.0/reading - 22.2;
+  }
+  Serial.print("Reading: " + String(reading) + " : ");
+  Serial.println(calculation);
   delay(500); 
 }

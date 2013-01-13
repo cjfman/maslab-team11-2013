@@ -2,27 +2,36 @@
 
 DebouncedRead::DebouncedRead()
 {
-  pinMode(0, INPUT);
-  digitalWrite(0, HIGH);
-  this->time = millis();
-  this->pin = 0;
-  this->value = digitalRead(0);
+  this->setup(0, HIGH, false);
 }
 DebouncedRead::DebouncedRead(unsigned int pin)
 {
-  pinMode(pin, INPUT);
-  digitalWrite(pin, HIGH);
-  this->time = millis();
-  this->pin = pin;
-  this->value = digitalRead(this->pin);
+  this->setup(pin, HIGH, false);
 }
 
 DebouncedRead::DebouncedRead(unsigned int pin, unsigned int pull)
+{
+  this->setup(pin, pull, false);
+}
+
+DebouncedRead::DebouncedRead(unsigned int pin, unsigned int pull, boolean inversion)
+{
+  this->setup(pin, pull, inversion);
+}
+
+void DebouncedRead::setup(unsigned int pin, unsigned int pull, boolean inversion)
 {
   pinMode(pin, INPUT);
   digitalWrite(pin, pull);  this->time = millis();
   this->pin = pin;
   this->value = digitalRead(this->pin);
+  this->time = millis();
+  this->inverted = inversion;
+}
+
+void DebouncedRead::setInvertion(boolean setting)
+{
+  this->inverted = setting;
 }
 
 unsigned int DebouncedRead::read()
@@ -33,5 +42,5 @@ unsigned int DebouncedRead::read()
     this->value = digitalRead(this->pin);
     this->time = now;
   }
-  return this->value;
+  return (this->inverted) ? !this->value : this->value;
 }

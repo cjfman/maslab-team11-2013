@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "debouncedRead.h"
 #include "Motor.h"
+#include "Sensors.h"
 
 // Pins
 #define left_speed 2
@@ -10,6 +11,7 @@
 #define debug_light 13
 #define left_limit 52
 #define right_limit 53
+#define ir_1 A15
 
 // Commands
 #define cAllStop 911
@@ -40,8 +42,10 @@ String runSensorCheck();
 String checkLimitSwitches();
 DebouncedRead leftLimit;
 DebouncedRead rightLimit;
+IRSensor IR1;
 
 // Motors
+String allStop();
 String setForwardSpeed(long speed);
 Motor leftMotor;
 Motor rightMotor;
@@ -61,8 +65,16 @@ void setup()
   rightMotor = Motor(right_speed, right_direction);
 
   // Set Limit Switches
-  rightLimit = DebouncedRead(right_limit);
-  leftLimit = DebouncedRead(left_limit);
+  rightLimit = DebouncedRead(right_limit, HIGH, true);
+  leftLimit = DebouncedRead(left_limit, HIGH, true);
+  
+  // Set IR Sensors
+  IR1 = IRSensor(ir_1);
+  
+  
+  // Temp
+  pinMode(A14, INPUT);
+  pinMode(A13, INPUT);
   
   Serial.println("\n100:Ready");
 }
@@ -74,15 +86,20 @@ void loop()
   {
     while (!Serial.available())
     {
-      /*String message;
-      if ((message = runSensorCheck()).length() > 0)
-        Serial.println(message);*/
+      //Serial.println("Left: " + String(analogRead(A14)));
+      //Serial.println("Right: " + String(analogRead(A13)));
+      //delay(500);
     }
+    /*{
+      String message;
+      if ((message = runSensorCheck()).length() > 0)
+        Serial.println(message);
+    }//*/
     char c = Serial.read();
     if (c == '\n') break;
     command += c;
   }
-  //Serial.println(runCommand(command));
+  Serial.println(runCommand(command));
 }
 
 String runCommand(String command)
@@ -91,6 +108,8 @@ String runCommand(String command)
   String parameters = command.substring(4);
   switch(code)
   {
+  case cAllStop:
+    return allStop();
   case cStatus:
     return getStatus();
   case cForward:
@@ -105,6 +124,8 @@ String runCommand(String command)
     return "202:" + String(rightLimit.read());
   case cLeftLimit:
     return "203:" + String(leftLimit.read());
+  case cReadIR1:
+    return "204:" + IR1.readString();
   default:
     return "404: command "+ String(code) + " not found";
   } 
@@ -113,6 +134,12 @@ String runCommand(String command)
 String getStatus()
 {
   return "401: unimplimented";
+}
+
+String allStop()
+{
+  setForwardSpeed(0);
+  return "911: All Stopped";
 }
 
 String setForwardSpeed(long speed)
