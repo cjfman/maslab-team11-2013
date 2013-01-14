@@ -1,0 +1,12 @@
+Imaging Info:
+
+Ball Color Ranges:
+Red
+-H: 340-360 and 0-10
+-S: 151-255 out of 255
+-B: full range
+
+Green
+-H: 80-158
+-S: 104-255 out of 255
+-B: füll range
