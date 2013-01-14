@@ -324,7 +324,7 @@ class Master:
     def evadeFrontState(self, input):
         if not self.timer:
             self.timer = time.time()
-            self.timeout = 2
+            self.timeout = 1
     
         elif time.time() - self.timer > self.timeout:
             return sWander
@@ -336,7 +336,7 @@ class Master:
         if not self.timer:
             self.backwards()
             self.timer = time.time()
-            self.timeout = 2
+            self.timeout = 1
             self.last_action = "backwards"
     
         elif time.time() - self.timer > self.timeout:
@@ -347,7 +347,7 @@ class Master:
             else:
                 self.turnLeft()
                 self.timer = time.time()
-                self.timeout = 2
+                self.timeout = 1
                 self.last_action = "turn"
         
         return self.state
@@ -357,7 +357,7 @@ class Master:
         if not self.timer:
             self.backwards()
             self.timer = time.time()
-            self.timeout = 2
+            self.timeout = 1
             self.last_action = "backwards"
     
         elif time.time() - self.timer > self.timeout:
@@ -368,7 +368,7 @@ class Master:
             else:
                 self.turnLeft()
                 self.timer = time.time()
-                self.timeout = 2
+                self.timeout = 1
                 self.last_action = "turn"
         
         return self.state
