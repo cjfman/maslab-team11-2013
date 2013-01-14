@@ -49,7 +49,7 @@ y=240
 
 #Speed Constants
 forward_speed = 75
-turn_speed = 65
+turn_speed = 75
 
 ##def poll():
 ##    try:
@@ -136,6 +136,7 @@ class Master:
             print "Receive: " + message
     
         if not message or "000:" in message or "100:" in message:
+            pass
             print "Set hold flag"
             self.hold_flag = True
             raise ArduinoResetError(message)
@@ -168,6 +169,9 @@ class Master:
 
     def forward(self, speed = forward_speed):
         self.sendCommand(cForwardSpeed, speed)
+    
+    def backwards(self, speed = forward_speed):
+        self.sendCommand(cForwardSpeed, -1 * speed)
 
     def turnRight(self, speed = turn_speed):
         self.sendCommand(cRightSpeed, -1*turn_speed)
@@ -184,7 +188,7 @@ class Master:
         
         front_IR = (input[kIR1] < 6) and input[kIR1] != -1 and frontEn
         
-        print input[kIR1]
+        #print input[kIR1]
         
         evade = right \
             or left \
@@ -318,12 +322,55 @@ class Master:
         return self.state
 
     def evadeFrontState(self, input):
+        if not self.timer:
+            self.timer = time.time()
+            self.timeout = 2
+    
+        elif time.time() - self.timer > self.timeout:
+            return sWander
+
+        self.backwards()
         return self.state
 
     def evadeRightState(self, input):
+        if not self.timer:
+            self.backwards()
+            self.timer = time.time()
+            self.timeout = 2
+            self.last_action = "backwards"
+    
+        elif time.time() - self.timer > self.timeout:
+            if self.last_action == "turn":
+                self.forward(0)
+                return sWander
+
+            else:
+                self.turnLeft()
+                self.timer = time.time()
+                self.timeout = 2
+                self.last_action = "turn"
+        
         return self.state
+                
         
     def evadeLeftState(self, input):
+        if not self.timer:
+            self.backwards()
+            self.timer = time.time()
+            self.timeout = 2
+            self.last_action = "backwards"
+    
+        elif time.time() - self.timer > self.timeout:
+            if self.last_action == "turn":
+                self.forward(0)
+                return sWander
+
+            else:
+                self.turnLeft()
+                self.timer = time.time()
+                self.timeout = 2
+                self.last_action = "turn"
+        
         return self.state
 
 
@@ -351,6 +398,7 @@ class Master:
     def run(self):
         if not self.connect(): return
         #run CV thread
+        #self.cv.connect()
         print "Start Handshake"
         while not "100:" in self.port.readline(): pass
         self.write("100")

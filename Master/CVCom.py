@@ -37,8 +37,11 @@ class CVCom:
             self.time = time.time()
             try:
                 Ball.clear()
-                self.connection.sendall("balls")
+                self.connection.sendall("ball")
                 json_data = self.recv_timeout(self.connection)
+                if len(json_data) == 0 or json_data == "None":
+                    return False
+                
                 i = json_data.index(':')
                 dict = {}
                 dict['color'] = 'red'

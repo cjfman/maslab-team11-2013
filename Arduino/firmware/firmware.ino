@@ -113,7 +113,7 @@ void loop()
       if (now - time > 2000)
       {
         allStop();
-        Serial.println("100: No communication. Autostop");
+        //Serial.println("100: No communication. Autostop");
         time = now;
       }
     }
