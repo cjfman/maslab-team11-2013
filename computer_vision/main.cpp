@@ -5,7 +5,7 @@ using namespace cv;
 
 int main()
 {
-  Ballfinder cpvision(0, "5567", true);
+  Ballfinder cpvision(1, "5567", true);
   cpvision.runserver();
   return 1;
 }

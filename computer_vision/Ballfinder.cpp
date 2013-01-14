@@ -54,6 +54,8 @@ string Ballfinder::findballs()
         source=out;
         cvb::cvLabel(&source, dest, blobs);
         cvb::cvFilterByArea(blobs, areafilter, 1000000);
+        if (blobs.size()==0)
+          return string("");
     }
     if (show==true)
     {
@@ -67,14 +69,17 @@ string Ballfinder::findballs()
             }
         }
     }
-    char outmessage[10];
+    char outmessage[25];
     cvb::CvBlob* biggest=(blobs.find(cvb::cvLargestBlob(blobs))->second);
-    sprintf(outmessage, "%d", (biggest->maxx-biggest->minx));
+    snprintf(outmessage, 25,  "%d:%d\0", biggest->maxx-biggest->minx, (biggest->maxx+biggest->minx)/2);
+    //outmessage=std::to_string(biggest->maxx-biggest->minx)+":"+std::to_string((biggest->maxx+biggest->minx)/2);
+    //std::cout << string(outmessage) << "\n";
+//    sprintf(outmessage, "%d", biggest->maxx-biggest->minx);
     cvb::cvReleaseBlobs(blobs);
     if (show==true)
     {
         imshow("feed", frame);
-        waitKey(30);
+        waitKey(20);
     }
     return string(outmessage);
 }
@@ -97,6 +102,7 @@ void Ballfinder::runserver()
     {
         if (comms->waitmessage(30)==true)
         {
+          //findballs();
             comms->sendmessage(findballs());
         }
     }
