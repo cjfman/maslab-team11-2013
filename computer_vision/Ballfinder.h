@@ -1,31 +1,39 @@
 #pragma once
+#include <opencv2/objdetect/objdetect.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include "cvblob/cvblob.h"
+#include "Communications.h"
+#include <string>
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
 using namespace cv;
-
-struct Ball
-{
-};
 
 class Ballfinder
 {
 private:
-Mat frame;
-Scalar minred, maxred, mingreen, maxgreen;
+    //variables
+    bool show;
+    VideoCapture cap;
+    Mat frame, HSV;
+    std::map<cvb::CvLabel, cvb::CvBlob*>::iterator iter;
+    SocketServer* comms;
+
+    //functions
+    string convertInt(int number);
 public:
-
-Ballfinder(string image)
-{
-frame=imread(image);
-minred=Scalar(0,0,62);
-maxred=Scalar(255,50,255);
-mingreen=Scalar(0,58,0);
-maxgreen=Scalar(77,255,56);
-}
-
-void findballs(int* buf, int size)
-{
-Mat redout, greenout;
-inRange(frame, minred, maxred, redout);
-inRange(frame, mingreen, maxgreen, greenout);
-}
-
+    //variables
+    Scalar greenmin=Scalar(80/2, 104, 0);
+    Scalar greenmax=Scalar(158/2,255,255);
+    Scalar redmin=Scalar(340,151,0);
+    Scalar redmax=Scalar(360,255,255);
+    int areafilter=500;
+    //functions
+    Ballfinder(int camera, string portnum, bool show_video);
+    ~Ballfinder();
+    std::string findballs();
+    void show_raw_video();
+    void initserver(string port);
+    void runserver();
 };
