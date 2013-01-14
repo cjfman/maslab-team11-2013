@@ -10,6 +10,8 @@ class CVCom:
         self.port = port
         self.connected = False
         Ball.setPrimary('green')
+        self.time = None
+        self.timeout = None
 
     def connect(self):
         try:
@@ -30,19 +32,32 @@ class CVCom:
             return False
 
     def getBalls(self):
-        try:
-            Ball.clear()
-            self.connection.sendall("balls")
-            json_data = self.recv_timeout(self.connection)
-            balls = json.loads(json_data)
-            for ball in data:
-                Ball.add(Ball(ball))
     
-            return Ball.exist()
+        if not self.time or self.time - time.time() > self.timeout:
+            self.time = time.time()
+            try:
+                Ball.clear()
+                self.connection.sendall("balls")
+                json_data = self.recv_timeout(self.connection)
+                i = json_data.index(':')
+                dict = {}
+                dict['color'] = 'red'
+                dict['y'] = 0
+                dict['x'] = json_data[i+1:]
+                dict['width'] = json_data[:i]
+                
+                ##balls = json.loads(json_data)
+                ##for ball in data:
+                ##    Ball.add(Ball(ball))
+                ##
+                ##return Ball.exist()
 
-        except:
-            print sys.exc_info()[1]
-            return False
+            except:
+                print sys.exc_info()[1]
+                return False
+
+        else:
+            return Ball.exist()
 
     def recv_timeout(self, the_socket,timeout=2):
         the_socket.setblocking(0)
