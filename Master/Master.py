@@ -135,11 +135,10 @@ class Master:
             print "Send: " + w_message
             print "Receive: " + message
     
-        if not message or "000:" in message or "100:" in message:
-            pass
-            print "Set hold flag"
-            self.hold_flag = True
-            raise ArduinoResetError(message)
+        ##if not message or "000:" in message or "100:" in message:
+        ##    print "Set hold flag"
+        ##    self.hold_flag = True
+        ##    raise ArduinoResetError(message)
         
         return (code, message[4:-1])
     
@@ -420,7 +419,7 @@ class Master:
                 input = {}
 
                 # Check Busy Status
-                #input[kBusy] = self.checkBoolean(cStatus)
+                input[kBusy] = self.checkBoolean(cStatus)
                 
                 # Check Limit Switches
                 input[kRightLimit] = self.checkBoolean(cRightLimit)
@@ -434,7 +433,7 @@ class Master:
 
                 self.state = self.nextState(input)
                 ##time.sleep(.25)
-                #print "..."
+                print "..."
 
             except (ArduinoResetError):
                 pass
