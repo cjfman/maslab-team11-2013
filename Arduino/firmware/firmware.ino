@@ -21,7 +21,7 @@
 #define cStatus 201
 #define cRightLimit 202
 #define cLeftLimit 203
-#define cReadIR1 204
+#define cReadIR1 211
 #define cGyroX 220
 #define cGryoY 221
 #define cGyroZ 222
@@ -40,6 +40,7 @@
   300:<Current Speed>
 */
 
+void handshake();
 String runCommand(String command);
 String generateResponse(int code, int value);
 
@@ -94,7 +95,10 @@ void setup()
   pinMode(A13, INPUT);
   
   digitalWrite(debug_light, LOW);
+  
+  // Send Ready and wait for init com
   Serial.println("100:Ready");
+  handshake();
 }
 
 void loop()
@@ -123,6 +127,26 @@ void loop()
     command += c;
   }
   Serial.println(runCommand(command));
+}
+
+void handshake()
+{
+  String command = "";
+  while(true)
+  {
+    while (!Serial.available());
+    char c = Serial.read();
+    if (c == '\n') 
+    {
+      if (command == "100")
+        break;
+      else
+        command = "";
+    }
+    else
+      command += c;
+  }
+  Serial.println("101:Begin");
 }
 
 String runCommand(String command)

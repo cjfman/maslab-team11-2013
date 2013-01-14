@@ -13,7 +13,7 @@ cv_port = 5555
 cStatus = "201"
 cRightLimit = "202"
 cLeftLimit = "203"
-cIR1 = "204"
+cIR1 = "211"
 cGyroX = "220"
 cGyroY = "221"
 cGyroZ = "222"
@@ -49,7 +49,7 @@ y=240
 
 #Speed Constants
 forward_speed = 75
-turn_speed = 75
+turn_speed = 65
 
 ##def poll():
 ##    try:
@@ -82,7 +82,7 @@ class Master:
         self.timer = None
         self.timeout = None
         self.last_action = None
-        self.hold_flag = True
+        self.hold_flag = False
             
     def connect(self):
             print "Connecting"
@@ -124,15 +124,15 @@ class Master:
         return self.port.readline()[:-1]        
 
     def sendCommand(self, code, parameter = None):
-        message = code + ":"
+        w_message = code + ":"
         if parameter != None:
-            message += str(parameter)
+            w_message += str(parameter)
 
-        #print "Send: " + message
-        self.write(message)
-                
+        self.write(w_message)
+        
         message = self.read()
         if "404:" in message:
+            print "Send: " + w_message
             print "Receive: " + message
     
         if not message or "000:" in message or "100:" in message:
@@ -182,7 +182,9 @@ class Master:
         left = input[kLeftLimit]
         both = right and left
         
-        front_IR = (input[kIR1] < 4) and frontEn
+        front_IR = (input[kIR1] < 6) and input[kIR1] != -1 and frontEn
+        
+        print input[kIR1]
         
         evade = right \
             or left \
@@ -245,7 +247,7 @@ class Master:
     
         if not self.timer:
             self.timer = time.time()
-            self.timeout = 10
+            self.timeout = 5
     
         elif time.time() - self.timer > self.timeout:
             return sWander
@@ -281,7 +283,7 @@ class Master:
             return sWander
 
     def wanderState(self, input):
-        evade = self.sensorCheck(input, frontEn = False)
+        evade = self.sensorCheck(input)
         if evade:
             return evade
         
@@ -311,7 +313,7 @@ class Master:
                     self.sendCommand(cForwardSpeed, forward_speed)
             
             self.timer = time.time()
-            self.timeout = random.randint(3, 10)
+            self.timeout = random.randint(1, 5)
 
         return self.state
 
@@ -349,12 +351,17 @@ class Master:
     def run(self):
         if not self.connect(): return
         #run CV thread
+        print "Start Handshake"
+        while not "100:" in self.port.readline(): pass
+        self.write("100")
+        while not "101:" in self.port.readline(): pass
         print "Starting main loop"
         while True:
             try:
                 if self.hold_flag:
                     print "waitin for ready signal"
                     while not "100:" in self.port.readline(): pass
+                    print "Ready Signal Received"
                     self.hold_flag = False
                 
                 input = {}
@@ -373,7 +380,7 @@ class Master:
                 input[kBalls] = False #self.cv.getBalls()
 
                 self.state = self.nextState(input)
-                time.sleep(.25)
+                ##time.sleep(.25)
                 #print "..."
 
             except (ArduinoResetError):
