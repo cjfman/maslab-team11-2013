@@ -1,6 +1,13 @@
 import serial
 import sys, time
 
+from CVCom import CVCom
+from Ball import Ball
+
+#Computer Vision Info
+cv_host = "localhost"
+cv_port = 5555
+
 #Codes
 cStatus = "201"
 cRightLimit = "202"
@@ -31,16 +38,16 @@ y=240
 forward_speed = 100
 turn_speed = 200
 
-def poll():
-    try:
-        f = open("coord",'r');
-        val = f.read()
-        print "File: " + val
-        f.close();
-        return int(val)
-    except:
-        print sys.exc_info()[1]
-        return None
+##def poll():
+##    try:
+##        f = open("coord",'r');
+##        val = f.read()
+##        print "File: " + val
+##        f.close();
+##        return int(val)
+##    except:
+##        print sys.exc_info()[1]
+##        return None
 
 class Master:
 
@@ -51,16 +58,23 @@ class Master:
         self.x = x
         self.y = y
         self.port_name = port_name
+        self.cv = CVCom(cv_host, cv_port)
             
     def connect(self):
             print "Connecting"
             #if self.port: self.close()
             # Loop through possible values of ACMX, and try to connect on each one
-            for i in range(4):
+            for i in range(6):
                 try:
                     # Try to create the serial connection
                     if self.port_name:
                         port_name = self.port_name
+                    
+                    elif i == 4:
+                        port_name = "/dev/tty.usbmodemfa131"
+                            
+                    elif i == 5:
+                        port_name = "/dev/tty.usbmodemfa141"
                     
                     else:
                         port_name = '/dev/ttyACM{0}'.format(i)
@@ -68,7 +82,7 @@ class Master:
                     self.port=serial.Serial(port=port_name, baudrate=self.baud, timeout=1)
                     if self.port.isOpen():
                         time.sleep(2) # Wait for Arduino to initialize
-                        print "Connected"
+                        print "Connected on %s"%(port_name)
                         return True
         
                 except:
@@ -95,8 +109,9 @@ class Master:
                 
         message = self.read()
         print "Receive: " + message
+        
         if message:
-            return (message[0:3], message[4:])
+            return (code, message[4:])
         
         else:
             return (None, None)
@@ -115,12 +130,13 @@ class Master:
         self.sendCommand(cLeftSpeed, -1*turn_speed)
 
     def ballDemoState(self, input):
-        print "Ball Position: " + str(input[kBalls])
+        #print "Ball Position: " + str(input[kBalls])
         if input[kBalls]:
-            print "Demo: Found Ball"
-            diff = input[kBalls] - self.x
-            print "Position Difference: " + str(diff)
-            if abs(diff) < ball_proximity_th:
+            #print "Demo: Found Ball"
+            ball = Ball.closestPrimary()
+            diff = ball.x - self.x
+            #print "Position Difference: " + str(diff)
+            if abs(diff) < (ball_proximity_th + ball.radius):
                 self.sendCommand(cForwardSpeed, forward_speed)
 
             elif diff > 0:
@@ -130,7 +146,7 @@ class Master:
                 self.turnLeft()
 
         else:
-            print "Demo: Searching"
+            #print "Demo: Searching"
             self.turnRight()
 
         return self.state
@@ -168,11 +184,11 @@ class Master:
             # Check IR Sensors
 
             # Check Image Vision
-            input[kBalls] = poll() #self.vision.areBalls()
+            input[kBalls] = self.cv.getBalls()
 
             self.state = self.nextState(input)
             time.sleep(1)
             print "..."
 
-master = Master("/dev/ttyACM0", 115200, x, y)
+master = Master(None, 115200, x, y)
 master.run()
