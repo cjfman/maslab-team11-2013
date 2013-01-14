@@ -69,7 +69,7 @@ string Ballfinder::findballs()
     }
     char outmessage[10];
     cvb::CvBlob* biggest=(blobs.find(cvb::cvLargestBlob(blobs))->second);
-    sprintf(outmessage, "%d", (biggest->minx+biggest->maxx)/2);
+    sprintf(outmessage, "%d", (biggest->maxx-biggest->minx));
     cvb::cvReleaseBlobs(blobs);
     if (show==true)
     {
