@@ -32,13 +32,14 @@ class CVCom:
             return False
 
     def getBalls(self):
-    
-        if not self.time or self.time - time.time() > self.timeout:
+   	print "Asking server for data" 
+        if True: #not self.time or self.time - time.time() > self.timeout:
             self.time = time.time()
             try:
                 Ball.clear()
-                self.connection.sendall("ball")
-                json_data = self.recv_timeout(self.connection)
+                ##self.connection.sendall("ball")
+                json_data = self.connection.recv(8000);#self.recv_timeout(self.connection)
+		print "Server data: " + json_data
                 if len(json_data) == 0 or json_data == "None":
                     return False
                 
@@ -46,8 +47,8 @@ class CVCom:
                 dict = {}
                 dict['color'] = 'red'
                 dict['y'] = 0
-                dict['x'] = json_data[i+1:]
-                dict['width'] = json_data[:i]
+                dict['x'] = int(json_data[i+1:])
+                dict['width'] = int(json_data[:i])
                 
                 ##balls = json.loads(json_data)
                 ##for ball in data:
