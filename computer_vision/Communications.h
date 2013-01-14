@@ -42,9 +42,10 @@ class SocketServer
   struct sockaddr_storage their_addr;
   int host_socket, client_socket;
   public:
+  bool sendnow=false;
   SocketServer();
   ~SocketServer();
   SocketServer(std::string port);
-  bool waitmessage(int timeout);
+  int waitmessage();
   void sendmessage(std::string message);
 };

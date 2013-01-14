@@ -7,18 +7,23 @@
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include <iostream>
 using namespace cv;
+
+extern "C" void *thread_func(void* arg);
 
 class Ballfinder
 {
 private:
     //variables
     bool show;
+    bool send;
     VideoCapture cap;
     Mat frame, HSV;
     std::map<cvb::CvLabel, cvb::CvBlob*>::iterator iter;
     SocketServer* comms;
+    pthread_t listener;
 
     //functions
     string convertInt(int number);

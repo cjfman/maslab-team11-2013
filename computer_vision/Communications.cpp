@@ -3,6 +3,7 @@ using namespace std;
 
 SocketServer::SocketServer(string port)
 {
+    sendnow=false;
     memset(&host_nfo, 0, sizeof(host_nfo));
     memset(&client_nfo, 0, sizeof(client_nfo));
     std::cout << "setting up structs\n";
@@ -38,7 +39,7 @@ SocketServer::~SocketServer()
     close(host_socket);
 }
 
-bool SocketServer::waitmessage(int timeout)
+int SocketServer::waitmessage()
 {
     /* ssize_t bytes_recieved;
      char incomming_data_buffer[1000];
@@ -53,24 +54,27 @@ bool SocketServer::waitmessage(int timeout)
      //incomming_data_buffer[bytes_recieved] = '\0';
      //std::cout << incomming_data_buffer << std::endl;
      //*/
-    std::cout << "Waiting to recieve data..."  << std::endl;
-    ssize_t bytes_recieved;
-    char incomming_data_buffer[20];
-    bytes_recieved = recv(client_socket, incomming_data_buffer,10, 0);
-    // If no data arrives, the program will just wait here until some data arrives.
-    if (bytes_recieved == 0) std::cout << "host shut down." << std::endl ;
-    if (bytes_recieved == -1)std::cout << "recieve error!" << std::endl ;
-    std::cout << bytes_recieved << " bytes recieved :" << std::endl ;
-    incomming_data_buffer[bytes_recieved] = '\0';
-    std::cout << incomming_data_buffer << std::endl;
-    int val=strncmp(incomming_data_buffer, "ball", 3);
-    std::cout << val << "\n";
-    if (val==0)
+    while(1)
     {
-      std::cout << "true";
-      return true;
+        std::cout << "Waiting to recieve data..."  << std::endl;
+        ssize_t bytes_recieved;
+        char incomming_data_buffer[20];
+        bytes_recieved = recv(client_socket, incomming_data_buffer,10, 0);
+        // If no data arrives, the program will just wait here until some data arrives.
+        if (bytes_recieved == 0) std::cout << "host shut down." << std::endl ;
+        if (bytes_recieved == -1)std::cout << "recieve error!" << std::endl ;
+        std::cout << bytes_recieved << " bytes recieved :" << std::endl ;
+        incomming_data_buffer[bytes_recieved] = '\0';
+        std::cout << incomming_data_buffer << std::endl;
+        int val=strncmp(incomming_data_buffer, "ball", 3);
+        std::cout << val << "\n";
+        if (val==0)
+        {
+            std::cout << "true";
+            sendnow=true;
+        }
     }
-    else return false;
+    return 1;
 }
 
 void SocketServer::sendmessage(string message)

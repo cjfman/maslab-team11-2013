@@ -34,7 +34,8 @@ Ballfinder::Ballfinder(int camera, string portnum, bool show_video)
 
 Ballfinder::~Ballfinder()
 {
-    delete comms;
+   pthread_join(listener, NULL); 
+  delete comms;
 }
 
 string Ballfinder::findballs()
@@ -89,7 +90,13 @@ string Ballfinder::findballs()
     imwrite("test"+convertInt(count)+".jpg", frame);
     std::cout << "writing frame\n";
     ++count;
-    return string(outmessage);
+    if (comms->sendnow==true)
+    {
+      comms->sendnow=false;
+      return string(outmessage);
+    }
+    else
+      return string("none");
 }
 
 void Ballfinder::show_raw_video()
@@ -104,9 +111,16 @@ void Ballfinder::initserver(string port)
     comms= new SocketServer(port);
 }
 
+extern "C" void *thread_func(void* arg)
+{
+  static_cast<SocketServer *>(arg)->waitmessage();
+  //return;
+}
+
 void Ballfinder::runserver()
 {
-    while(1)
+  //pthread_create(&listener, NULL, thread_func, comms);
+  while(1)
     {
         comms->sendmessage(findballs());
     }
