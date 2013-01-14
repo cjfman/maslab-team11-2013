@@ -33,6 +33,14 @@ class Ball:
 
         else:
             return Ball.closest_green
+    
+    @staticmethod
+    def closestSecondary():
+        if Ball.primary != 'red':
+            return Ball.closest_red
+
+        else:
+            return Ball.closest_green
 
     @staticmethod
     def clear():

@@ -1,5 +1,6 @@
 #include <Wire.h>
 #include <stdlib.h>
+//#include <avr/wdt.h>
 
 #include "debouncedRead.h"
 #include "Motor.h"
@@ -63,28 +64,36 @@ long asciiToLong(String string);
 void setup()
 {
   Serial.begin(115200);
+  Serial.println("000:Starting Up");
   pinMode(debug_light, OUTPUT);
+  digitalWrite(debug_light, HIGH);
 
   
   // Set Motors
+  Serial.println("001:Motors");
   leftMotor = Motor(left_speed, left_direction);
   rightMotor = Motor(right_speed, right_direction);
 
   // Set Limit Switches
+  Serial.println("001:Limit Switches");
   rightLimit = DebouncedRead(right_limit, HIGH, true);
   leftLimit = DebouncedRead(left_limit, HIGH, true);
   
   // Set IR Sensors
+  Serial.println("001:IR Sensors");
   IR1 = IRSensor(ir_1);
   
   // Setup IMU
+  Serial.println("001:IMU");
   Wire.begin();
-  setupGyro();
+  Serial.println("001:...Gyro");
+  //setupGyro();
     
   // Temp
   pinMode(A14, INPUT);
   pinMode(A13, INPUT);
   
+  digitalWrite(debug_light, LOW);
   Serial.println("100:Ready");
 }
 
@@ -93,7 +102,17 @@ void loop()
   String command = "";
   while(true)
   {
-    while (!Serial.available());
+    long time = millis();
+    while (!Serial.available())
+    {
+      long now = millis();
+      if (now - time > 2000)
+      {
+        allStop();
+        Serial.println("100: No communication. Autostop");
+        time = now;
+      }
+    }
     /*{
       String message;
       if ((message = runSensorCheck()).length() > 0)
@@ -148,7 +167,7 @@ String generateResponse(int code, int value)
 
 String getStatus()
 {
-  return "401: unimplimented";
+  return "100: ready";
 }
 
 String allStop()

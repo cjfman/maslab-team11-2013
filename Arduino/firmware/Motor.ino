@@ -20,7 +20,7 @@ int Motor::setSpeed(int speed)
   int abs_speed = abs(speed);
   abs_speed = (abs_speed <= 255) ? abs_speed : 255;
   analogWrite(speed_pin, abs_speed);
-  digitalWrite(direction_pin, direction);
+  digitalWrite(direction_pin, !direction);
   return abs_speed;
 }
 
