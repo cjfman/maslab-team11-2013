@@ -34,11 +34,12 @@ Ballfinder::Ballfinder(int camera, string portnum, bool show_video)
 
 Ballfinder::~Ballfinder()
 {
-  delete comms;
+    delete comms;
 }
 
 string Ballfinder::findballs()
 {
+    static int count=0;
     Mat out;
     cvb::CvBlobs blobs;
     cap >> frame;
@@ -54,8 +55,8 @@ string Ballfinder::findballs()
         source=out;
         cvb::cvLabel(&source, dest, blobs);
         cvb::cvFilterByArea(blobs, areafilter, 1000000);
-        if (blobs.size()==0)
-          return string("");
+        //if (blobs.size()==0)
+        //return string("");
     }
     if (show==true)
     {
@@ -69,18 +70,25 @@ string Ballfinder::findballs()
             }
         }
     }
-    char outmessage[25];
-    cvb::CvBlob* biggest=(blobs.find(cvb::cvLargestBlob(blobs))->second);
-    snprintf(outmessage, 25,  "%d:%d\0", biggest->maxx-biggest->minx, (biggest->maxx+biggest->minx)/2);
-    //outmessage=std::to_string(biggest->maxx-biggest->minx)+":"+std::to_string((biggest->maxx+biggest->minx)/2);
-    //std::cout << string(outmessage) << "\n";
+    char outmessage[25]= {"none\0"};
+    if (blobs.size()>0)
+    {
+        cvb::CvBlob* biggest=(blobs.find(cvb::cvLargestBlob(blobs))->second);
+        snprintf(outmessage, 25,  "%d:%d\0", biggest->maxx-biggest->minx, (biggest->maxx+biggest->minx)/2);
+        //outmessage=std::to_string(biggest->maxx-biggest->minx)+":"+std::to_string((biggest->maxx+biggest->minx)/2);
+        //std::cout << string(outmessage) << "\n";
 //    sprintf(outmessage, "%d", biggest->maxx-biggest->minx);
+    }
+    std::cout << string(outmessage) << "\n";
     cvb::cvReleaseBlobs(blobs);
     if (show==true)
     {
         imshow("feed", frame);
         waitKey(20);
     }
+    imwrite("test"+convertInt(count)+".jpg", frame);
+    std::cout << "writing frame\n";
+    ++count;
     return string(outmessage);
 }
 
@@ -100,10 +108,6 @@ void Ballfinder::runserver()
 {
     while(1)
     {
-        if (comms->waitmessage(30)==true)
-        {
-          //findballs();
-            comms->sendmessage(findballs());
-        }
+        comms->sendmessage(findballs());
     }
 }
