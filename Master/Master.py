@@ -7,7 +7,7 @@ from Ball import Ball
 
 #Computer Vision Info
 cv_host = "localhost"
-cv_port = 5555
+cv_port = 5556
 
 #Codes
 cStatus = "201"
@@ -184,7 +184,7 @@ class Master:
         
         front_IR = (input[kIR1] < 6) and input[kIR1] != -1 and frontEn
         
-        print input[kIR1]
+        #print input[kIR1]
         
         evade = right \
             or left \
@@ -351,6 +351,7 @@ class Master:
     def run(self):
         if not self.connect(): return
         #run CV thread
+        self.cv.connect()
         print "Start Handshake"
         while not "100:" in self.port.readline(): pass
         self.write("100")
@@ -377,7 +378,7 @@ class Master:
                 input[kIR1] = self.checkFloat(cIR1)
 
                 # Check Image Vision
-                input[kBalls] = False #self.cv.getBalls()
+                input[kBalls] = self.cv.getBalls()
 
                 self.state = self.nextState(input)
                 ##time.sleep(.25)

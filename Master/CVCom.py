@@ -14,8 +14,12 @@ class CVCom:
         self.timeout = None
 
     def connect(self):
+        print "opening socket"
         try:
+            print self.host
             ip = socket.gethostbyname(self.host)
+            #print "attempting connection to %s on %d"%(str(ip), port)
+            print ip, self.port
             self.connection = socket.socket() #(socket.AF_INET, socket.SOCK_STREAM)
             self.connection.connect((ip , self.port))
             self.connected = True
@@ -31,9 +35,8 @@ class CVCom:
         finally:
             return False
 
-    def getBalls(self):
-    
-        if not self.time or self.time - time.time() > self.timeout:
+    def getBalls(self): 
+        if True: #if not self.time or self.time - time.time() > self.timeout:
             self.time = time.time()
             try:
                 Ball.clear()
@@ -54,6 +57,7 @@ class CVCom:
 
             except:
                 print sys.exc_info()[1]
+                print 'hai'
                 return False
 
         else:
