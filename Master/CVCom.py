@@ -33,7 +33,7 @@ class CVCom:
 
     def getBalls(self):
     
-        if not self.time or self.time - time.time() > self.timeout:
+        if True: #not self.time or self.time - time.time() > self.timeout:
             self.time = time.time()
             try:
                 Ball.clear()
@@ -43,11 +43,14 @@ class CVCom:
                     return False
                 
                 i = json_data.index(':')
-                dict = {}
-                dict['color'] = 'red'
-                dict['y'] = 0
-                dict['x'] = json_data[i+1:]
-                dict['width'] = json_data[:i]
+                ##dict = {}
+                ##dict['color'] = 'red'
+                ##dict['y'] = 0
+                ##dict['x'] = json_data[i+1:]
+                ##dict['width'] = json_data[:i]
+                x = int(json_data[i+1:])
+                width = int(json_data[:i])
+                return (x, width)
                 
                 ##balls = json.loads(json_data)
                 ##for ball in data:

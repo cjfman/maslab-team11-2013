@@ -7,7 +7,7 @@ from Ball import Ball
 
 #Computer Vision Info
 cv_host = "localhost"
-cv_port = 5555
+cv_port = 5556
 
 #Codes
 cStatus = "201"
@@ -266,13 +266,18 @@ class Master:
     
         if input[kBalls]:
             #print "Demo: Found Ball"
-            ball = Ball.closestPrimary()
-            if not ball:
-                ball = Ball.closestSecondary()
-            
-            diff = ball.x - self.x
+            ##ball = Ball.closestPrimary()
+            ##if not ball:
+            ##    ball = Ball.closestSecondary()
+            ##
+            ##diff = ball.x - self.x
             #print "Position Difference: " + str(diff)
-            if abs(diff) < (ball_proximity_th + ball.radius):
+            ##if abs(diff) < (ball_proximity_th + ball.radius):
+            
+            radius = input[kBalls][1]
+            ball_x = input[kBalls][0]
+            diff = ball_x - self.x
+            if abs(diff) < (ball_proximity_th + radius):
                 self.sendCommand(cForwardSpeed, forward_speed)
 
             elif diff > 0:
@@ -398,7 +403,7 @@ class Master:
     def run(self):
         if not self.connect(): return
         #run CV thread
-        #self.cv.connect()
+        self.cv.connect()
         print "Start Handshake"
         while not "100:" in self.port.readline(): pass
         self.write("100")
@@ -425,7 +430,7 @@ class Master:
                 input[kIR1] = self.checkFloat(cIR1)
 
                 # Check Image Vision
-                input[kBalls] = False #self.cv.getBalls()
+                input[kBalls] = self.cv.getBalls()
 
                 self.state = self.nextState(input)
                 ##time.sleep(.25)
