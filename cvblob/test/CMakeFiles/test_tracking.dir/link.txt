@@ -1,1 +1,0 @@
-/usr/bin/c++   -O3 -DNDEBUG    CMakeFiles/test_tracking.dir/test_tracking.o  -o ../bin/test_tracking -rdynamic ../lib/libcvblob.so -lopencv_gpu -lopencv_contrib -lopencv_legacy -lopencv_objdetect -lopencv_calib3d -lopencv_features2d -lopencv_video -lopencv_highgui -lopencv_ml -lopencv_imgproc -lopencv_flann -lopencv_core -Wl,-rpath,/home/yanni/maslab/ecpu/cvblob/lib 
