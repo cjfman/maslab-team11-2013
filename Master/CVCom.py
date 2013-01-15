@@ -14,8 +14,12 @@ class CVCom:
         self.timeout = None
 
     def connect(self):
+        print "opening socket"
         try:
+            print self.host
             ip = socket.gethostbyname(self.host)
+            #print "attempting connection to %s on %d"%(str(ip), port)
+            print ip, self.port
             self.connection = socket.socket() #(socket.AF_INET, socket.SOCK_STREAM)
             self.connection.connect((ip , self.port))
             self.connected = True
@@ -61,6 +65,7 @@ class CVCom:
 
             except:
                 print sys.exc_info()[1]
+                print 'hai'
                 return False
 
         else:
