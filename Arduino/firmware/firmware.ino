@@ -40,6 +40,7 @@
   300:<Current Speed>
 */
 
+unsigned long stop_time;
 void handshake();
 String runCommand(String command);
 String generateResponse(int code, int value);
@@ -99,6 +100,8 @@ void setup()
   // Send Ready and wait for init com
   Serial.println("100:Ready");
   handshake();
+  stop_time = millis();
+  stop_time += 180000;
 }
 
 void loop()
@@ -109,7 +112,15 @@ void loop()
     long time = millis();
     while (!Serial.available())
     {
-      long now = millis();
+      unsigned long now = millis();
+      if (now > stop_time)
+      {
+        allStop();
+        //Serial.println(now);
+        //Serial.println(stop_time);
+        Serial.println("000: TIME OUT");
+        while(1);
+      }
       if (now - time > 2000)
       {
         allStop();
