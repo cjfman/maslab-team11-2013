@@ -48,8 +48,8 @@ x=320
 y=240
 
 #Speed Constants
-forward_speed = 75
-turn_speed = 75
+forward_speed = 130
+turn_speed = 190
 
 ##def poll():
 ##    try:
@@ -275,6 +275,7 @@ class Master:
             
             radius = input[kBalls][1]
             ball_x = input[kBalls][0]
+            print ball_x, radius
             diff = ball_x - self.x
             if abs(diff) < (ball_proximity_th + radius):
                 self.sendCommand(cForwardSpeed, forward_speed)
@@ -433,10 +434,11 @@ class Master:
 
                 self.state = self.nextState(input)
                 ##time.sleep(.25)
-                print "..."
+                ##print "..."
 
             except (ArduinoResetError):
                 pass
 
 master = Master(None, 115200, x, y)
 master.run()
+
