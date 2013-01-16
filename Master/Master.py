@@ -80,7 +80,7 @@ class Master:
     
     def connect(self):
             print "Connecting"
-            #if self.port: self.close()
+            if self.port: self.port.close()
             # Loop through possible values of ACMX, and try to connect on each one
             for i in range(6):
                 try:
@@ -104,23 +104,25 @@ class Master:
                         return True
         
                 except:
+                    pass
                     # Some debugging prints
-                    print sys.exc_info()[1]
-                    print "Arduino not connected on : " + port_name
+                    #print sys.exc_info()[1]
+                    #print "Arduino not connected on : " + port_name
 
             print "Failed to connect"
             return False
 
-    def write(self, message):
-        self.port.write(message + '\n')
-
-    def read(self):
-        return self.port.readline()[:-1]
     
     
     #####################
     ## Command Functions
     #####################
+    
+    def write(self, message):
+        self.port.write(message + '\n')
+
+    def read(self):
+        return self.port.readline()[:-1]
 
     def sendCommand(self, code, parameter = None):
         w_message = code + ":"
@@ -136,6 +138,13 @@ class Master:
     
         if "000:" in message:
             print "Arduino restarted"
+            self.hold_flag = True
+            raise ArduinoResetError(message)
+    
+        if not message:
+            print "No communication from Arduino"
+            print "Reestablishing Connection"
+            self.connect()
             self.hold_flag = True
             raise ArduinoResetError(message)
         

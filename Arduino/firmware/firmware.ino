@@ -11,7 +11,7 @@
 #define left_direction 3
 #define right_speed 4
 #define right_direction 5
-#define debug_light 13
+#define debug_led 13
 #define left_limit 52
 #define right_limit 53
 #define ir_1 A15
@@ -42,6 +42,7 @@ String checkLimitSwitches();
 DebouncedRead leftLimit;
 DebouncedRead rightLimit;
 IRSensor IR1;
+Gyro gyro;
 
 // Motors
 String allStop();
@@ -55,11 +56,11 @@ long asciiToLong(String string);
 
 void setup()
 {
+  pinMode(debug_led, OUTPUT);
+  digitalWrite(debug_led, HIGH);
+  
   Serial.begin(115200);
   Serial.println("000:Starting Up");
-  pinMode(debug_light, OUTPUT);
-  digitalWrite(debug_light, HIGH);
-
   
   // Set Motors
   Serial.println("001:Motors");
@@ -79,15 +80,17 @@ void setup()
   Serial.println("001:IMU");
   Wire.begin();
   Serial.println("001:...Gyro");
-  //setupGyro();
-  
-  digitalWrite(debug_light, LOW);
-  
+  gyro = Gyro();
+  gyro.setup();
+    
   // Send Ready and wait for init com
   Serial.println("100:Ready");
   handshake();
+  
+  // Set autostop time
   stop_time = millis();
   stop_time += 180000;
+  digitalWrite(debug_led, LOW);
 }
 
 void loop()
@@ -181,11 +184,11 @@ String runCommand(String command)
   case cReadIR1:
     return "204:" + IR1.readString();
   case cGyroX:
-    return generateResponse(code, gyroGetX());
+    return generateResponse(code, gyro.getX());
   case cGryoY:
-    return generateResponse(code, gyroGetY());
+    return generateResponse(code, gyro.getY());
   case cGyroZ:
-    return generateResponse(code, gyroGetZ());
+    return generateResponse(code, gyro.getZ());
   default:
     return "404: command "+ String(code) + " not found";
   } 
@@ -211,7 +214,6 @@ String setForwardSpeed(long speed)
 {
   rightMotor.setSpeed(speed);
   leftMotor.setSpeed(speed);
-  analogWrite(13, speed);
   return "301:" + String(speed);
 }
 
