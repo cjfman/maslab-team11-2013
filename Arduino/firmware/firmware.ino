@@ -30,16 +30,6 @@
 #define cLeftSpeed 303
 #define cAutoStop 304
 
-/* Response Codes
-  100: Ready to accept commands
-  101: Right and left limit switches hit
-  102: Right limit switch hit
-  103: Left limit switch hit
-  202: Right limit status
-  203: Left limit status
-  300:<Current Speed>
-*/
-
 unsigned long stop_time;
 void handshake();
 String runCommand(String command);
@@ -90,10 +80,6 @@ void setup()
   Wire.begin();
   Serial.println("001:...Gyro");
   //setupGyro();
-    
-  // Temp
-  pinMode(A14, INPUT);
-  pinMode(A13, INPUT);
   
   digitalWrite(debug_light, LOW);
   
@@ -110,29 +96,27 @@ void loop()
   while(true)
   {
     long time = millis();
+    // Wait for line to be read
     while (!Serial.available())
     {
+      // While waiting, check for 3 minute alert
       unsigned long now = millis();
       if (now > stop_time)
       {
         allStop();
-        //Serial.println(now);
-        //Serial.println(stop_time);
-        Serial.println("000: TIME OUT");
+        Serial.println("999: TIME OUT");
         while(1);
       }
+      // Check for disconnection
       if (now - time > 2000)
       {
         allStop();
         //Serial.println("100: No communication. Autostop");
+        //handshake();
         time = now;
+        command = "";
       }
     }
-    /*{
-      String message;
-      if ((message = runSensorCheck()).length() > 0)
-        Serial.println(message);
-    }//*/
     char c = Serial.read();
     if (c == '\n') break;
     command += c;
@@ -143,9 +127,21 @@ void loop()
 void handshake()
 {
   String command = "";
+  long time = millis();
   while(true)
   {
-    while (!Serial.available());
+    while (!Serial.available())
+    {
+      // Check for communication timeout
+      unsigned long now = millis();
+      if (now - time > 5000)
+      {
+        Serial.println("100: No communication. Resend");
+        time = now;
+      }
+    }
+    
+    // Read Character
     char c = Serial.read();
     if (c == '\n') 
     {
