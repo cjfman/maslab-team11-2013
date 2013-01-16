@@ -50,7 +50,7 @@ void loop(){
   Serial.print(" Z:");
   Serial.println(z);
 
-  //delay(100); //Just here to slow down the serial to make it more readable
+  delay(100); //Just here to slow down the serial to make it more readable
 }
 
 void getGyroValues(){
