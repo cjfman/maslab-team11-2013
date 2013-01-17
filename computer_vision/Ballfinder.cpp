@@ -40,38 +40,55 @@ Ballfinder::~Ballfinder()
 
 void Ballfinder::findballs()
 {
-    time_t time_ref=time(NULL);
-    Mat out, green, red1, red2;
+    static int count=0;
+    Mat out;
     cvb::CvBlobs blobs;
     cap >> frame;
     cvtColor(frame, HSV, CV_BGR2HSV, 0);
-    inRange(HSV, greenmin, greenmax, green);
-    inRange(HSV, redmin[0], redmax[0], red1);
-    inRange(HSV, redmin[1], redmax[1], red2);
-    addWeighted(red1, 1, red2, 1, 0, out);
-    addWeighted(out, 1, green, 1, 0, out);
-    IplImage source=out;
-    IplImage* dest=cvCreateImage(cvGetSize(&source), IPL_DEPTH_LABEL, 1);
-    cvb::cvLabel(&source, dest, blobs);
-    cvb::cvFilterByArea(blobs, areafilter, 1000000);
-    /*inRange(HSV, greenmin, greenmax, out);
-    IplImage source=out;
-    IplImage* dest=cvCreateImage(cvGetSize(&source), IPL_DEPTH_LABEL, 1);
-    cvb::cvLabel(&source, dest, blobs);
-    cvb::cvFilterByArea(blobs, areafilter, 1000000);
-    if (blobs.size()==0)
+    if (comms->findwall==false)
     {
-        Mat red2, combined;
-        inRange(HSV, redmin[0], redmax[0], out);
+        Mat green, red1, red2;
+        inRange(HSV, greenmin, greenmax, green);
+        inRange(HSV, redmin[0], redmax[0], red1);
         inRange(HSV, redmin[1], redmax[1], red2);
-        addWeighted(out, 1, red2, 1, 0, combined);
-        source=combined;
+        addWeighted(red1, 1, red2, 1, 0, out);
+        addWeighted(out, 1, green, 1, 0, out);
+        IplImage source=out;
+        IplImage* dest=cvCreateImage(cvGetSize(&source), IPL_DEPTH_LABEL, 1);
         cvb::cvLabel(&source, dest, blobs);
         cvb::cvFilterByArea(blobs, areafilter, 1000000);
-        //if (blobs.size()==0)
-        //return string("");
     }
-    */
+    else
+    {
+        Mat bluewall;
+        inRange(HSV, bluewallmin, bluewallmax, bluewall);
+        IplImage source=out;
+        IplImage* dest=cvCreateImage(cvGetSize(&source), IPL_DEPTH_LABEL, 1);
+        cvb::cvLabel(&source, dest, blobs);
+        cvb::cvFilterByArea(blobs, wallareafilter, 1000000);
+       // for (iter=blobs.begin(); iter!=blobs.end(); ++iter)
+       // {
+            //image.at<cv::Vec3b>(x,y)[0] = newval[0];
+            cvb::CvBlob* blob=(blobs.find(cvb::cvLargestBlob(blobs))->second);
+            bool onwall=false;
+            for (int x=blob->minx; x<=blob->maxx; ++x)
+            {
+              int hue=HSV.at<Vec3b>(x, blob->miny)[0];
+              if ((hue>=yellowwall[0])&&(hue<=yellowwall[1])&&onwall==false)
+              {
+                onwall=true;
+                wall_locations.push_back(x);
+              }
+              else if ((hue<yellowwall[0])||(hue>yellowwall[1])&&onwall==true)
+              {
+                onwall=false;
+                wall_locations.push_back(x-1);
+              }
+            }
+       // }
+    //comms->findwall=false;
+            std::cout << "exiting blue wall code\n";
+    }
     if (show==true)
     {
         for (iter=blobs.begin(); iter!=blobs.end(); ++iter)
@@ -100,7 +117,12 @@ void Ballfinder::findballs()
         imshow("feed", frame);
         waitKey(20);
     }
-    //imwrite("test"+convertInt(count)+".jpg", frame);
+    if (comms->pic==true)
+    {
+      imwrite("test"+convertInt(count)+".jpg", frame);
+      ++count;
+      comms->pic=false;
+    }
     //std::cout << "writing frame\n";
     //++count;
     if (comms->sendnow==true)
@@ -110,7 +132,12 @@ void Ballfinder::findballs()
         comms->sendmessage(outmessage);
         //return outmessage;
     }
-    std::cout << time(NULL)-time_ref << "\n";
+    if (comms->findwall==true)
+    {
+      comms->findwall=false;
+      comms->sendmessage(outmessage);
+    }
+    //std::cout << time(NULL)-time_ref << "\n";
     //else
     //return string("none");
 }

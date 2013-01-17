@@ -10,6 +10,7 @@
 #include <pthread.h>
 #include <time.h>
 #include <iostream>
+#include <vector>
 using namespace cv;
 
 extern "C" void *thread_func(void* arg);
@@ -23,6 +24,7 @@ private:
     VideoCapture cap;
     Mat frame, HSV;
     std::map<cvb::CvLabel, cvb::CvBlob*>::iterator iter;
+    std::vector<int> wall_locations; //odd number of members indicates wall trails off right side of screen
     SocketServer* comms;
     pthread_t listener;
 
@@ -34,7 +36,11 @@ public:
     Scalar greenmax=Scalar(158/2,255,255);
     Scalar redmin[2]={Scalar(340,151,0), Scalar(0,151,0)};
     Scalar redmax[2]={Scalar(360,255,255), Scalar(10, 255, 255)};
+    Scalar bluewallmin=Scalar(201,196,0);
+    Scalar bluewallmax=Scalar(205,255,255);
+    int yellowwall[2]={50,150};
     int areafilter=500;
+    int wallareafilter=500;
     //functions
     Ballfinder(int camera, string portnum, bool show_video);
     ~Ballfinder();
