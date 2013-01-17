@@ -38,7 +38,7 @@ Ballfinder::~Ballfinder()
   delete comms;
 }
 
-string Ballfinder::findballs()
+void Ballfinder::findballs()
 {
     static int count=0;
     Mat out;
@@ -95,10 +95,10 @@ string Ballfinder::findballs()
       comms->sendnow=false;
       //return string(outmessage);
       comms->sendmessage(outmessage);
-      return outmessage;
+      //return outmessage;
     }
-    else
-      return string("none");
+    //else
+      //return string("none");
 }
 
 void Ballfinder::show_raw_video()
@@ -122,7 +122,7 @@ extern "C" void *thread_func(void* arg)
 void Ballfinder::runserver()
 {
   pthread_create(&listener, NULL, thread_func, comms);
-  while(1)
+  while(comms->bye==false)
     {
         findballs();
     }

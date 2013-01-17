@@ -43,6 +43,7 @@ class SocketServer
   int host_socket, client_socket;
   public:
   bool sendnow=false;
+  bool bye=false;
   SocketServer();
   ~SocketServer();
   SocketServer(std::string port);

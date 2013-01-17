@@ -37,7 +37,7 @@ public:
     //functions
     Ballfinder(int camera, string portnum, bool show_video);
     ~Ballfinder();
-    std::string findballs();
+    void findballs();
     void show_raw_video();
     void initserver(string port);
     void runserver();

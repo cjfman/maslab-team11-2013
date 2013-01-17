@@ -10,7 +10,7 @@ SocketServer::SocketServer(string port)
     host_nfo.ai_family=AF_UNSPEC;
     host_nfo.ai_socktype=SOCK_STREAM;
     host_nfo.ai_flags=AI_PASSIVE;
-    int status=getaddrinfo(NULL, "5556", &host_nfo, &host_nfo_list);
+    int status=getaddrinfo(NULL, port.c_str(), &host_nfo, &host_nfo_list);
     if (status==-1) cout << "failed getting host info\n";
     host_socket=socket(host_nfo_list->ai_family, host_nfo_list->ai_socktype, host_nfo_list->ai_protocol);
     if (host_socket==-1) cout << "socket error\n";
@@ -56,25 +56,30 @@ int SocketServer::waitmessage()
      //*/
     while(1)
     {
-        std::cout << "Waiting to recieve data..."  << std::endl;
+        //std::cout << "Waiting to recieve data..."  << std::endl;
         ssize_t bytes_recieved;
         char incomming_data_buffer[20];
         bytes_recieved = recv(client_socket, incomming_data_buffer,10, 0);
         // If no data arrives, the program will just wait here until some data arrives.
-        if (bytes_recieved == 0) std::cout << "host shut down." << std::endl ;
-        if (bytes_recieved == -1)std::cout << "recieve error!" << std::endl ;
-        std::cout << bytes_recieved << " bytes recieved :" << std::endl ;
+        //if (bytes_recieved == 0) std::cout << "host shut down." << std::endl ;
+        //if (bytes_recieved == -1)std::cout << "recieve error!" << std::endl ;
+        //std::cout << bytes_recieved << " bytes recieved :" << std::endl ;
         incomming_data_buffer[bytes_recieved] = '\0';
-        std::cout << incomming_data_buffer << std::endl;
+        //std::cout << incomming_data_buffer << std::endl;
         int val=strncmp(incomming_data_buffer, "ball", 3);
-        std::cout << val << "\n";
+        //std::cout << val << "\n";
         if (val==0)
         {
-            std::cout << "true";
+           // std::cout << "true";
             sendnow=true;
         }
+        else if (strncmp(incomming_data_buffer, "bye", 3)==0)
+        {
+          bye=true;
+          break;
+        }
     }
-    return 1;
+    return 0;
 }
 
 void SocketServer::sendmessage(string message)
