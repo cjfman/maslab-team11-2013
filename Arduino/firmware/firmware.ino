@@ -89,7 +89,7 @@ void setup()
   //gyro.setup();
   imu = IMU();
   imu.setup();
-    
+   
   // Send Ready and wait for init com
   Serial.println("100:Ready");
   handshake();
