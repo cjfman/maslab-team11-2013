@@ -2,16 +2,17 @@
 #include <stdlib.h>
 //#include <avr/wdt.h>
 
-#include "debouncedRead.h"
+#include "DebouncedRead.h"
 #include "Motor.h"
 #include "Sensors.h"
+#include "IMU.h"
 
 // Pins
 #define left_speed 2
 #define left_direction 3
 #define right_speed 4
 #define right_direction 5
-#define debug_light 13
+#define debug_led 13
 #define left_limit 52
 #define right_limit 53
 #define ir_1 A15
@@ -25,6 +26,7 @@
 #define cGyroX 220
 #define cGryoY 221
 #define cGyroZ 222
+#define cHeading 230
 #define cForward 301
 #define cRightSpeed 302
 #define cLeftSpeed 303
@@ -34,6 +36,8 @@ unsigned long stop_time;
 void handshake();
 String runCommand(String command);
 String generateResponse(int code, int value);
+String generateResponse(int code, unsigned int value);
+String generateResponse(int code, float value);
 
 // Sensors
 String getStatus();
@@ -42,6 +46,8 @@ String checkLimitSwitches();
 DebouncedRead leftLimit;
 DebouncedRead rightLimit;
 IRSensor IR1;
+//Gyro gyro;
+IMU imu;
 
 // Motors
 String allStop();
@@ -55,11 +61,11 @@ long asciiToLong(String string);
 
 void setup()
 {
+  pinMode(debug_led, OUTPUT);
+  digitalWrite(debug_led, HIGH);
+  
   Serial.begin(115200);
   Serial.println("000:Starting Up");
-  pinMode(debug_light, OUTPUT);
-  digitalWrite(debug_light, HIGH);
-
   
   // Set Motors
   Serial.println("001:Motors");
@@ -78,16 +84,20 @@ void setup()
   // Setup IMU
   Serial.println("001:IMU");
   Wire.begin();
-  Serial.println("001:...Gyro");
-  //setupGyro();
-  
-  digitalWrite(debug_light, LOW);
-  
+  //Serial.println("001:...Gyro");
+  //gyro = Gyro();
+  //gyro.setup();
+  imu = IMU();
+  imu.setup();
+   
   // Send Ready and wait for init com
   Serial.println("100:Ready");
   handshake();
+  
+  // Set autostop time
   stop_time = millis();
   stop_time += 180000;
+  digitalWrite(debug_led, LOW);
 }
 
 void loop()
@@ -181,11 +191,13 @@ String runCommand(String command)
   case cReadIR1:
     return "204:" + IR1.readString();
   case cGyroX:
-    return generateResponse(code, gyroGetX());
+    return generateResponse(code, imu.getGyroX());
   case cGryoY:
-    return generateResponse(code, gyroGetY());
+    return generateResponse(code, imu.getGyroY());
   case cGyroZ:
-    return generateResponse(code, gyroGetZ());
+    return generateResponse(code, imu.getGyroZ());
+  case cHeading:
+    return generateResponse(code, imu.getHeading());
   default:
     return "404: command "+ String(code) + " not found";
   } 
@@ -194,6 +206,18 @@ String runCommand(String command)
 String generateResponse(int code, int value)
 {
   return String(code) + ":" + String(value);
+}
+
+String generateResponse(int code, unsigned int value)
+{
+  return String(code) + ":" + String(value);
+}
+
+String generateResponse(int code, float value)
+{
+  char buf[32];
+  dtostrf(value, 4, 3, buf); 
+  return String(code) + ":" + buf;
 }
 
 String getStatus()
@@ -211,7 +235,6 @@ String setForwardSpeed(long speed)
 {
   rightMotor.setSpeed(speed);
   leftMotor.setSpeed(speed);
-  analogWrite(13, speed);
   return "301:" + String(speed);
 }
 

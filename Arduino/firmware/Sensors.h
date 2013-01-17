@@ -19,10 +19,20 @@ private:
   void setup(int pin, int offset);
 };
 
-void setupGyro();
-int gyroGetX();
-int gyroGetY();
-int gyroGetZ();
-
+class Gyro
+{
+public:
+  Gyro();
+  void setup();
+  int getX();
+  int getY();
+  int getZ();
+  
+private:
+  int L3G4200D_Address;
+  int setupL3G4200D(int scale);
+  void writeRegister(int deviceAddress, byte address, byte val);
+  int readRegister(int deviceAddress, byte address);
+};
 
 #endif

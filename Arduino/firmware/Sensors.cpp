@@ -66,64 +66,24 @@ String IRSensor::readString()
 #define GYRO_CTRL_REG4 0x23
 #define GYRO_CTRL_REG5 0x24
 
-int L3G4200D_Address = 105; //I2C address of the L3G4200D
-void setupGyro(){
+Gyro::Gyro()
+{
+  L3G4200D_Address = 105; //I2C address of the L3G4200D
+}
+
+void Gyro::setup(){
   setupL3G4200D(2000); // Configure L3G4200  - 250, 500 or 2000 deg/sec
   delay(1500); //wait for the sensor to be ready 
 }
 
-/*
-void loop(){
-  int xx, yy, zz;
-  int num = 5;
-  for (int i = 0; i < num; i++)
-  {
-    getGyroValues();  // This will update x, y, and z with new values
-    xx /= 2;
-    yy /= 2;
-    zz /= 2;
-    
-    xx += x;
-    yy += y;
-    zz += z;
-  }
-
-  Serial.print("X:");
-  Serial.print(x);
-  Serial.print(',');
-
-  Serial.print(" Y:");
-  Serial.print(y);
-
-  Serial.print(" Z:");
-  Serial.println(z);
-
-  //delay(100); //Just here to slow down the serial to make it more readable
-}
-
-void getGyroValues(){
-
-  byte xMSB = readRegister(L3G4200D_Address, 0x29);
-  byte xLSB = readRegister(L3G4200D_Address, 0x28);
-  x = ((xMSB << 8) | xLSB);
-
-  byte yMSB = readRegister(L3G4200D_Address, 0x2B);
-  byte yLSB = readRegister(L3G4200D_Address, 0x2A);
-  y = ((yMSB << 8) | yLSB);
-
-  byte zMSB = readRegister(L3G4200D_Address, 0x2D);
-  byte zLSB = readRegister(L3G4200D_Address, 0x2C);
-  z = ((zMSB << 8) | zLSB);
-}*/
-
-int gyroGetX()
+int Gyro::getX()
 {
   byte MSB = readRegister(L3G4200D_Address, 0x29);
   byte LSB = readRegister(L3G4200D_Address, 0x28);
   return ((MSB << 8) | LSB);
 }
 
-int gyroGetY()
+int Gyro::getY()
 {
   byte MSB = readRegister(L3G4200D_Address, 0x2B);
   byte LSB = readRegister(L3G4200D_Address, 0x2A);
@@ -131,14 +91,14 @@ int gyroGetY()
 }
 
 
-int gyroGetZ()
+int Gyro::getZ()
 {
   byte MSB = readRegister(L3G4200D_Address, 0x2D);
   byte LSB = readRegister(L3G4200D_Address, 0x2C);
   return ((MSB << 8) | LSB);
 }
 
-int setupL3G4200D(int scale){
+int Gyro::setupL3G4200D(int scale){
   //From  Jim Lindblom of Sparkfun's code
 
   // Enable x, y, z and turn off power down:
@@ -167,15 +127,14 @@ int setupL3G4200D(int scale){
   writeRegister(L3G4200D_Address, GYRO_CTRL_REG5, 0b00000000);
 }
 
-void writeRegister(int deviceAddress, byte address, byte val) {
+void Gyro::writeRegister(int deviceAddress, byte address, byte val) {
     Wire.beginTransmission(deviceAddress); // start transmission to device 
     Wire.write(address);       // send register address
     Wire.write(val);         // send value to write
     Wire.endTransmission();     // end transmission
 }
 
-int readRegister(int deviceAddress, byte address){
-
+int Gyro::readRegister(int deviceAddress, byte address){
     int v;
     Wire.beginTransmission(deviceAddress);
     Wire.write(address); // register to read
