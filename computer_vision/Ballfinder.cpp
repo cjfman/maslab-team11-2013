@@ -80,20 +80,22 @@ string Ballfinder::findballs()
         //std::cout << string(outmessage) << "\n";
 //    sprintf(outmessage, "%d", biggest->maxx-biggest->minx);
     }
-    std::cout << string(outmessage) << "\n";
+    //std::cout << string(outmessage) << "\n";
     cvb::cvReleaseBlobs(blobs);
     if (show==true)
     {
         imshow("feed", frame);
         waitKey(20);
     }
-    imwrite("test"+convertInt(count)+".jpg", frame);
-    std::cout << "writing frame\n";
+    //imwrite("test"+convertInt(count)+".jpg", frame);
+    //std::cout << "writing frame\n";
     ++count;
     if (comms->sendnow==true)
     {
       comms->sendnow=false;
-      return string(outmessage);
+      //return string(outmessage);
+      comms->sendmessage(outmessage);
+      return outmessage;
     }
     else
       return string("none");
@@ -119,9 +121,9 @@ extern "C" void *thread_func(void* arg)
 
 void Ballfinder::runserver()
 {
-  //pthread_create(&listener, NULL, thread_func, comms);
+  pthread_create(&listener, NULL, thread_func, comms);
   while(1)
     {
-        comms->sendmessage(findballs());
+        findballs();
     }
 }
