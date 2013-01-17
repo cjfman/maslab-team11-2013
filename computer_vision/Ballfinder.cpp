@@ -40,12 +40,21 @@ Ballfinder::~Ballfinder()
 
 void Ballfinder::findballs()
 {
-    static int count=0;
-    Mat out;
+    time_t time_ref=time(NULL);
+    Mat out, green, red1, red2;
     cvb::CvBlobs blobs;
     cap >> frame;
     cvtColor(frame, HSV, CV_BGR2HSV, 0);
-    inRange(HSV, greenmin, greenmax, out);
+    inRange(HSV, greenmin, greenmax, green);
+    inRange(HSV, redmin[0], redmax[0], red1);
+    inRange(HSV, redmin[1], redmax[1], red2);
+    addWeighted(red1, 1, red2, 1, 0, out);
+    addWeighted(out, 1, green, 1, 0, out);
+    IplImage source=out;
+    IplImage* dest=cvCreateImage(cvGetSize(&source), IPL_DEPTH_LABEL, 1);
+    cvb::cvLabel(&source, dest, blobs);
+    cvb::cvFilterByArea(blobs, areafilter, 1000000);
+    /*inRange(HSV, greenmin, greenmax, out);
     IplImage source=out;
     IplImage* dest=cvCreateImage(cvGetSize(&source), IPL_DEPTH_LABEL, 1);
     cvb::cvLabel(&source, dest, blobs);
@@ -62,6 +71,7 @@ void Ballfinder::findballs()
         //if (blobs.size()==0)
         //return string("");
     }
+    */
     if (show==true)
     {
         for (iter=blobs.begin(); iter!=blobs.end(); ++iter)
@@ -92,7 +102,7 @@ void Ballfinder::findballs()
     }
     //imwrite("test"+convertInt(count)+".jpg", frame);
     //std::cout << "writing frame\n";
-    ++count;
+    //++count;
     if (comms->sendnow==true)
     {
         comms->sendnow=false;
@@ -100,6 +110,7 @@ void Ballfinder::findballs()
         comms->sendmessage(outmessage);
         //return outmessage;
     }
+    std::cout << time(NULL)-time_ref << "\n";
     //else
     //return string("none");
 }
