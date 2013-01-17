@@ -26,6 +26,7 @@
 #define cGyroX 220
 #define cGryoY 221
 #define cGyroZ 222
+#define cHeading 230
 #define cForward 301
 #define cRightSpeed 302
 #define cLeftSpeed 303
@@ -195,6 +196,8 @@ String runCommand(String command)
     return generateResponse(code, imu.getGyroY());
   case cGyroZ:
     return generateResponse(code, imu.getGyroZ());
+  case cHeading:
+    return generateResponse(code, imu.getHeading());
   default:
     return "404: command "+ String(code) + " not found";
   } 

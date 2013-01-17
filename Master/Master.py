@@ -17,6 +17,7 @@ cIR1 = "211"
 cGyroX = "220"
 cGyroY = "221"
 cGyroZ = "222"
+cHeading "230"
 cClearDistance = "230"
 cForwardSpeed = "301" # speed between 0 255
 cRightSpeed = "302"   # speed between 0 255
