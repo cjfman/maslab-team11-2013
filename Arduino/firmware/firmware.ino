@@ -2,9 +2,10 @@
 #include <stdlib.h>
 //#include <avr/wdt.h>
 
-#include "debouncedRead.h"
+#include "DebouncedRead.h"
 #include "Motor.h"
 #include "Sensors.h"
+#include "IMU.h"
 
 // Pins
 #define left_speed 2
@@ -34,6 +35,8 @@ unsigned long stop_time;
 void handshake();
 String runCommand(String command);
 String generateResponse(int code, int value);
+String generateResponse(int code, unsigned int value);
+String generateResponse(int code, float value);
 
 // Sensors
 String getStatus();
@@ -42,7 +45,8 @@ String checkLimitSwitches();
 DebouncedRead leftLimit;
 DebouncedRead rightLimit;
 IRSensor IR1;
-Gyro gyro;
+//Gyro gyro;
+IMU imu;
 
 // Motors
 String allStop();
@@ -79,9 +83,11 @@ void setup()
   // Setup IMU
   Serial.println("001:IMU");
   Wire.begin();
-  Serial.println("001:...Gyro");
-  gyro = Gyro();
-  gyro.setup();
+  //Serial.println("001:...Gyro");
+  //gyro = Gyro();
+  //gyro.setup();
+  imu = IMU();
+  imu.setup();
     
   // Send Ready and wait for init com
   Serial.println("100:Ready");
@@ -184,11 +190,11 @@ String runCommand(String command)
   case cReadIR1:
     return "204:" + IR1.readString();
   case cGyroX:
-    return generateResponse(code, gyro.getX());
+    return generateResponse(code, imu.getGyroX());
   case cGryoY:
-    return generateResponse(code, gyro.getY());
+    return generateResponse(code, imu.getGyroY());
   case cGyroZ:
-    return generateResponse(code, gyro.getZ());
+    return generateResponse(code, imu.getGyroZ());
   default:
     return "404: command "+ String(code) + " not found";
   } 
@@ -197,6 +203,18 @@ String runCommand(String command)
 String generateResponse(int code, int value)
 {
   return String(code) + ":" + String(value);
+}
+
+String generateResponse(int code, unsigned int value)
+{
+  return String(code) + ":" + String(value);
+}
+
+String generateResponse(int code, float value)
+{
+  char buf[32];
+  dtostrf(value, 4, 3, buf); 
+  return String(code) + ":" + buf;
 }
 
 String getStatus()

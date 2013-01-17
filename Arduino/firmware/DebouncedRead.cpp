@@ -1,4 +1,5 @@
-#include "debouncedRead.h"
+#include <Arduino.h>
+#include "DebouncedRead.h"
 
 DebouncedRead::DebouncedRead()
 {

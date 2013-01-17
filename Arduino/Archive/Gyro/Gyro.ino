@@ -7,6 +7,7 @@
 #define CTRL_REG3 0x22
 #define CTRL_REG4 0x23
 #define CTRL_REG5 0x24
+#define STATUS_REG 0x27
 
 int L3G4200D_Address = 105; //I2C address of the L3G4200D
 
@@ -15,7 +16,6 @@ int y;
 int z;
 
 void setup(){
-
   Wire.begin();
   Serial.begin(115200);
 
@@ -26,31 +26,55 @@ void setup(){
 }
 
 void loop(){
-  int xx, yy, zz;
-  int num = 5;
-  for (int i = 0; i < num; i++)
-  {
-    getGyroValues();  // This will update x, y, and z with new values
-    xx /= 2;
-    yy /= 2;
-    zz /= 2;
-    
-    xx += x;
-    yy += y;
-    zz += z;
-  }
-
-  Serial.print("X:");
-  Serial.print(x);
+  static long pos = 0;
+  static unsigned long time = millis();
+  
+  //while(!gyroAvailable());
+  
+  getGyroValues();
+  //float xx = x * .07;
+  double yy = y * .07;
+  //float zz = z * .07;
+  
+  /*Serial.print("X:");
+  Serial.print(xx);
   Serial.print(',');
 
   Serial.print(" Y:");
-  Serial.print(y);
+  Serial.print(yy);
 
   Serial.print(" Z:");
-  Serial.println(z);
-
+  Serial.println(zz);*/
+  
+  unsigned long now = millis();
+  unsigned long diff = now - time;
+  time = now;
+  
+  //yy = (abs(yy) >= 2) ? yy : 0;
+  double rotation = diff * yy;
+  rotation /= 1000;
+  pos += rotation;
+  pos = pos%360;
+  
+  if (yy != 0)
+  {
+    Serial.print("Y:");
+    Serial.println(yy);
+    Serial.print("Interval: ");
+    Serial.println(diff);
+    Serial.print("Rotation: ");
+    Serial.println(rotation);
+    Serial.print("Position: ");
+    Serial.println(pos);
+    Serial.println("\n");
+  }
+  
   delay(100); //Just here to slow down the serial to make it more readable
+}
+
+int gyroAvailable(){
+  byte a = readRegister(L3G4200D_Address, STATUS_REG);
+  return (a >> 3) & 0x1;
 }
 
 void getGyroValues(){
