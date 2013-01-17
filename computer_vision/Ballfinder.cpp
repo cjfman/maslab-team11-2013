@@ -34,8 +34,8 @@ Ballfinder::Ballfinder(int camera, string portnum, bool show_video)
 
 Ballfinder::~Ballfinder()
 {
-   pthread_join(listener, NULL); 
-  delete comms;
+    pthread_join(listener, NULL);
+    delete comms;
 }
 
 void Ballfinder::findballs()
@@ -52,8 +52,11 @@ void Ballfinder::findballs()
     cvb::cvFilterByArea(blobs, areafilter, 1000000);
     if (blobs.size()==0)
     {
-        inRange(HSV, redmin, redmax, out);
-        source=out;
+        Mat red2, combined;
+        inRange(HSV, redmin[0], redmax[0], out);
+        inRange(HSV, redmin[1], redmax[1], red2);
+        addWeighted(out, 1, red2, 1, 0, combined);
+        source=combined;
         cvb::cvLabel(&source, dest, blobs);
         cvb::cvFilterByArea(blobs, areafilter, 1000000);
         //if (blobs.size()==0)
@@ -92,13 +95,13 @@ void Ballfinder::findballs()
     ++count;
     if (comms->sendnow==true)
     {
-      comms->sendnow=false;
-      //return string(outmessage);
-      comms->sendmessage(outmessage);
-      //return outmessage;
+        comms->sendnow=false;
+        //return string(outmessage);
+        comms->sendmessage(outmessage);
+        //return outmessage;
     }
     //else
-      //return string("none");
+    //return string("none");
 }
 
 void Ballfinder::show_raw_video()
@@ -115,14 +118,14 @@ void Ballfinder::initserver(string port)
 
 extern "C" void *thread_func(void* arg)
 {
-  static_cast<SocketServer *>(arg)->waitmessage();
-  //return;
+    static_cast<SocketServer *>(arg)->waitmessage();
+    //return;
 }
 
 void Ballfinder::runserver()
 {
-  pthread_create(&listener, NULL, thread_func, comms);
-  while(comms->bye==false)
+    pthread_create(&listener, NULL, thread_func, comms);
+    while(comms->bye==false)
     {
         findballs();
     }

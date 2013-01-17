@@ -31,8 +31,8 @@ public:
     //variables
     Scalar greenmin=Scalar(80/2, 104, 0);
     Scalar greenmax=Scalar(158/2,255,255);
-    Scalar redmin=Scalar(340,151,0);
-    Scalar redmax=Scalar(360,255,255);
+    Scalar redmin[2]={Scalar(340,151,0), Scalar(0,151,0)};
+    Scalar redmax[2]={Scalar(360,255,255), Scalar(10, 255, 255)};
     int areafilter=500;
     //functions
     Ballfinder(int camera, string portnum, bool show_video);
