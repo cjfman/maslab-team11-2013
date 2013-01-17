@@ -51,17 +51,6 @@ y=240
 forward_speed = 130
 turn_speed = 190
 
-##def poll():
-##    try:
-##        f = open("coord",'r');
-##        val = f.read()
-##        print "File: " + val
-##        f.close();
-##        return int(val)
-##    except:
-##        print sys.exc_info()[1]
-##        return None
-
 class ArduinoResetError(Exception):
     def __init__(self, value):
         self.value = value
@@ -83,7 +72,12 @@ class Master:
         self.timeout = None
         self.last_action = None
         self.hold_flag = False
-            
+    
+    
+    ####################
+    ## Serial Functions
+    ####################
+    
     def connect(self):
             print "Connecting"
             #if self.port: self.close()
@@ -121,7 +115,12 @@ class Master:
         self.port.write(message + '\n')
 
     def read(self):
-        return self.port.readline()[:-1]        
+        return self.port.readline()[:-1]
+    
+    
+    #####################
+    ## Command Functions
+    #####################
 
     def sendCommand(self, code, parameter = None):
         w_message = code + ":"
@@ -135,10 +134,10 @@ class Master:
             print "Send: " + w_message
             print "Receive: " + message
     
-        ##if not message or "000:" in message or "100:" in message:
-        ##    print "Set hold flag"
-        ##    self.hold_flag = True
-        ##    raise ArduinoResetError(message)
+        if "000:" in message:
+            print "Arduino restarted"
+            self.hold_flag = True
+            raise ArduinoResetError(message)
         
         return (code, message[4:-1])
     
@@ -166,6 +165,11 @@ class Master:
             sys.exc_info()[1]
             return -1
 
+
+    ####################
+    ## Motion Functions
+    ####################
+    
     def forward(self, speed = forward_speed):
         self.sendCommand(cForwardSpeed, speed)
     
@@ -179,6 +183,10 @@ class Master:
     def turnLeft(self, speed = turn_speed):
         self.sendCommand(cRightSpeed, turn_speed)
         self.sendCommand(cLeftSpeed, -1*turn_speed)
+    
+    ####################
+    ## Other
+    ####################
 
     def sensorCheck(self, input, frontEn = True):
         right = input[kRightLimit]
@@ -214,6 +222,10 @@ class Master:
 
         else:
             return None
+
+    ####################
+    ## State Functions
+    ####################
 
     def ballDemoState(self, input):
         #print "Ball Position: " + str(input[kBalls])
@@ -326,6 +338,10 @@ class Master:
 
         return self.state
 
+    ####################
+    ## Evade Functions
+    ####################
+
     def evadeFrontState(self, input):
         if not self.timer:
             self.timer = time.time()
@@ -378,6 +394,9 @@ class Master:
         
         return self.state
 
+    ############################
+    ## Next State and Main Loop
+    ############################
 
     def nextState(self, input):
         state = self.state
@@ -404,17 +423,23 @@ class Master:
         if not self.connect(): return
         #run CV thread
         self.cv.connect()
+        
+        # Start communication with arduino
         print "Start Handshake"
         while not "100:" in self.port.readline(): pass
         self.write("100")
         while not "101:" in self.port.readline(): pass
+        
+        # Main Loop
         print "Starting main loop"
         while True:
             try:
                 if self.hold_flag:
-                    print "waitin for ready signal"
+                    print "Redo handshake"
                     while not "100:" in self.port.readline(): pass
-                    print "Ready Signal Received"
+                    self.write("100")
+                    while not "101:" in self.port.readline(): pass
+                    print "Handshake complete"
                     self.hold_flag = False
                 
                 input = {}
