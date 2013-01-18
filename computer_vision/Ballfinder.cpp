@@ -66,28 +66,28 @@ void Ballfinder::findballs()
         IplImage* dest=cvCreateImage(cvGetSize(&source), IPL_DEPTH_LABEL, 1);
         cvb::cvLabel(&source, dest, blobs);
         cvb::cvFilterByArea(blobs, wallareafilter, 1000000);
-       // for (iter=blobs.begin(); iter!=blobs.end(); ++iter)
-       // {
-            //image.at<cv::Vec3b>(x,y)[0] = newval[0];
-            cvb::CvBlob* blob=(blobs.find(cvb::cvLargestBlob(blobs))->second);
-            bool onwall=false;
-            for (int x=blob->minx; x<=blob->maxx; ++x)
+        // for (iter=blobs.begin(); iter!=blobs.end(); ++iter)
+        // {
+        //image.at<cv::Vec3b>(x,y)[0] = newval[0];
+        cvb::CvBlob* blob=(blobs.find(cvb::cvLargestBlob(blobs))->second);
+        bool onwall=false;
+        for (int x=blob->minx; x<=blob->maxx; ++x)
+        {
+            int hue=HSV.at<Vec3b>(x, blob->miny)[0];
+            if ((hue>=yellowwall[0])&&(hue<=yellowwall[1])&&onwall==false)
             {
-              int hue=HSV.at<Vec3b>(x, blob->miny)[0];
-              if ((hue>=yellowwall[0])&&(hue<=yellowwall[1])&&onwall==false)
-              {
                 onwall=true;
                 wall_locations.push_back(x);
-              }
-              else if ((hue<yellowwall[0])||(hue>yellowwall[1])&&onwall==true)
-              {
+            }
+            else if ((hue<yellowwall[0])||(hue>yellowwall[1])&&onwall==true)
+            {
                 onwall=false;
                 wall_locations.push_back(x-1);
-              }
             }
-       // }
-    //comms->findwall=false;
-            std::cout << "exiting blue wall code\n";
+        }
+        // }
+        //comms->findwall=false;
+        std::cout << "exiting blue wall code\n";
     }
     if (show==true)
     {
@@ -105,7 +105,14 @@ void Ballfinder::findballs()
     if (blobs.size()>0)
     {
         cvb::CvBlob* biggest=(blobs.find(cvb::cvLargestBlob(blobs))->second);
-        snprintf(outmessage, 25,  "%d:%d\0", biggest->maxx-biggest->minx, (biggest->maxx+biggest->minx)/2);
+        //if (comms->findwall==false)
+        //{   
+          snprintf(outmessage, 25,  "%d:%d\0", biggest->maxx-biggest->minx, (biggest->maxx+biggest->minx)/2);
+       /* }
+        else
+        {
+          snprintf(outmessage, 25, 
+        }*/
         //outmessage=std::to_string(biggest->maxx-biggest->minx)+":"+std::to_string((biggest->maxx+biggest->minx)/2);
         //std::cout << string(outmessage) << "\n";
 //    sprintf(outmessage, "%d", biggest->maxx-biggest->minx);
@@ -119,9 +126,9 @@ void Ballfinder::findballs()
     }
     if (comms->pic==true)
     {
-      imwrite("test"+convertInt(count)+".jpg", frame);
-      ++count;
-      comms->pic=false;
+        imwrite("test"+convertInt(count)+".jpg", frame);
+        ++count;
+        comms->pic=false;
     }
     //std::cout << "writing frame\n";
     //++count;
@@ -134,8 +141,8 @@ void Ballfinder::findballs()
     }
     if (comms->findwall==true)
     {
-      comms->findwall=false;
-      comms->sendmessage(outmessage);
+        comms->findwall=false;
+        comms->sendmessage(outmessage);
     }
     //std::cout << time(NULL)-time_ref << "\n";
     //else
