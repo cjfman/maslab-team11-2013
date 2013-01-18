@@ -44,6 +44,8 @@ class SocketServer
   public:
   bool sendnow=false;
   bool bye=false;
+  bool pic=false;
+  bool findwall=false;
   SocketServer();
   ~SocketServer();
   SocketServer(std::string port);

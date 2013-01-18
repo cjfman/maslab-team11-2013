@@ -66,12 +66,20 @@ int SocketServer::waitmessage()
         //std::cout << bytes_recieved << " bytes recieved :" << std::endl ;
         incomming_data_buffer[bytes_recieved] = '\0';
         //std::cout << incomming_data_buffer << std::endl;
-        int val=strncmp(incomming_data_buffer, "ball", 3);
+        int val=strncmp(incomming_data_buffer, "ball", 4);
         //std::cout << val << "\n";
         if (val==0)
         {
            // std::cout << "true";
             sendnow=true;
+        }
+        else if(strncmp(incomming_data_buffer, "findwall", 9)==0)
+        {
+          findwall=true;
+        }
+        else if (strncmp(incomming_data_buffer, "pic", 3)==0)
+        {
+          pic=true;
         }
         else if (strncmp(incomming_data_buffer, "bye", 3)==0)
         {
