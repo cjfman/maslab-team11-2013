@@ -75,7 +75,8 @@ float IMU::getGyroZ()
 int IMU::getHeading()
 {
   MagnetometerScaled scaled = compass.ReadScaledAxis();
-  float heading = atan2(scaled.YAxis, scaled.XAxis);
+  //float heading = atan2(scaled.YAxis, scaled.XAxis);
+  float heading = atan2(scaled.ZAxis, scaled.YAxis);
   heading += declinationAngle;
   if(heading < 0) heading += 2*PI;
   if(heading > 2*PI) heading -= 2*PI;

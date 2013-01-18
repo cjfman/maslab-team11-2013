@@ -8,14 +8,15 @@
 #include "IMU.h"
 
 // Pins
-#define left_speed 2
-#define left_direction 3
-#define right_speed 4
-#define right_direction 5
+#define left_speed 4
+#define left_direction 5
+#define right_speed 2
+#define right_direction 3
 #define debug_led 13
 #define left_limit 52
 #define right_limit 53
 #define ir_1 A15
+#define ir_2 A14
 
 // Commands
 #define cAllStop 911
@@ -23,6 +24,7 @@
 #define cRightLimit 202
 #define cLeftLimit 203
 #define cReadIR1 211
+#define cReadIR2 212
 #define cGyroX 220
 #define cGryoY 221
 #define cGyroZ 222
@@ -46,6 +48,7 @@ String checkLimitSwitches();
 DebouncedRead leftLimit;
 DebouncedRead rightLimit;
 IRSensor IR1;
+IRSensor IR2;
 //Gyro gyro;
 IMU imu;
 
@@ -80,6 +83,7 @@ void setup()
   // Set IR Sensors
   Serial.println("001:IR Sensors");
   IR1 = IRSensor(ir_1);
+  IR2 = IRSensor(ir_2);
   
   // Setup IMU
   Serial.println("001:IMU");
@@ -189,7 +193,9 @@ String runCommand(String command)
   case cLeftLimit:
     return generateResponse(code, leftLimit.read());
   case cReadIR1:
-    return "204:" + IR1.readString();
+    return "211:" + IR1.readString();
+  case cReadIR2:
+    return "212:" + IR2.readString();
   case cGyroX:
     return generateResponse(code, imu.getGyroX());
   case cGryoY:

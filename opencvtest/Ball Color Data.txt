@@ -10,3 +10,8 @@ Green
 -H: 80-158
 -S: 104-255 out of 255
 -B: füll range
+
+Wall:
+-H: 201-205
+-S: 196-255
+-B: full range

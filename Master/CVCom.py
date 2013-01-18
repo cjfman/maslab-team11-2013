@@ -43,8 +43,8 @@ class CVCom:
             self.time = time.time()
             try:
                 Ball.clear()
-                ##self.connection.sendall("ball")
-                json_data = self.connection.recv(8000);#self.recv_timeout(self.connection)
+                self.connection.sendall("ball")
+                json_data = self.connection.recv(8000) #self.recv_timeout(self.connection)
 		##print "Server data: " + json_data
                 if len(json_data) == 0 or json_data == "none":
                     return False
@@ -67,6 +67,20 @@ class CVCom:
 
         else:
             return Ball.exist()
+
+    def getYellowWall(self):
+        if not self.connected:
+            return False
+            
+        self.connection.sendall("findwall")
+        data = self.connection.recv(8000)
+        if len(data) == 0 or data == "none":
+                    return False
+
+        i = json_data.index(':')
+        x = int(data[i+1:])
+        width = int(data[:i])
+        return (x, width)
 
     def recv_timeout(self, the_socket,timeout=2):
         the_socket.setblocking(0)
