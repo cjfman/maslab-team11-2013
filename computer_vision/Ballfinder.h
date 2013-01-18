@@ -38,7 +38,7 @@ public:
     Scalar redmax[2]={Scalar(360,255,255), Scalar(10, 255, 255)};
     Scalar bluewallmin=Scalar(201,196,0);
     Scalar bluewallmax=Scalar(205,255,255);
-    int yellowwall[2]={50,150};
+    int yellowwall[2]={56,62};
     int areafilter=500;
     int wallareafilter=500;
     //functions
