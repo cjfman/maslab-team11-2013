@@ -7,7 +7,7 @@ from Ball import Ball
 
 #Computer Vision Info
 cv_host = "localhost"
-cv_port = 5556
+cv_port = 5555
 
 #Codes
 cStatus = "201"
@@ -56,13 +56,13 @@ kHeading = "heading"
 kYellow = "yellow"
 
 #Thresholds
-ball_proximity_th = 50
+ball_proximity_th = 10
 x=320
 y=240
 
 #Speed Constants
-forward_speed = 50
-turn_speed = 70
+forward_speed = 125
+turn_speed = 60
 
 class ArduinoResetError(Exception):
     def __init__(self, value):
@@ -249,8 +249,8 @@ class Master:
         evade = right \
             or left \
             or front_IR \
-            or right_ir < 6 \
-            or left_ir < 6
+            or (right_ir < 6 and right_ir >= 0) \
+            or (left_ir < 6 and left_ir >= 0)
         
         if evade:
             self.forward(0)
@@ -278,6 +278,7 @@ class Master:
                     
                 else:
                     print "Right IR tripped: ", right_ir
+                    return sEvadeRight
                     
             if left_ir < 6:
                 if right_ir < 7:
@@ -286,6 +287,7 @@ class Master:
                     
                 else:
                     print "Left IR tripped: ", left_ir
+                    return sEvadeLeft
 
         else:
             return None
@@ -383,7 +385,7 @@ class Master:
             return self.state
 
         else:
-            return sWander
+            return sLookInCircle
 
     def findYellowState(self, input):
         evade = self.sensorCheck(input, frontEn = False)
@@ -423,33 +425,33 @@ class Master:
             
         heading = input[kHeading]
         
-#        if not self.timer or time.time() - self.timer > self.timeout:
-#            action = random.randint(0, 1)
-#            
-#            if self.last_action == aTurn:
-#                print "Wander Forward"
-#                self.sendCommand(cForwardSpeed, forward_speed)
-#                self.last_action = aForward
-#                
-#            else:
-#                self.last_action = aTurn
-#                if action == 0:
-#                    print "Wander Right"
-#                    self.turnRight()
-#                    
-#                elif action == 1:
-#                    print "Wander Left"
-#                    self.turnLeft()
-#            
-#                else:
-#                    print "Wander Default"
-#                    self.sendCommand(cForwardSpeed, forward_speed)
-#            
-#            self.timer = time.time()
-#            self.timeout = random.randint(1, 5)
+        if not self.timer or time.time() - self.timer > self.timeout:
+            action = random.randint(0, 1)
+            
+            if self.last_action == aTurn:
+                print "Wander Forward"
+                self.sendCommand(cForwardSpeed, forward_speed)
+                self.last_action = aForward
+                
+            else:
+                self.last_action = aTurn
+                if action == 0:
+                    print "Wander Right"
+                    self.turnRight()
+                    
+                elif action == 1:
+                    print "Wander Left"
+                    self.turnLeft()
+            
+                else:
+                    print "Wander Default"
+                    self.sendCommand(cForwardSpeed, forward_speed)
+            
+            self.timer = time.time()
+            self.timeout = random.randint(1, 5)
         
-        if self.last_action == None:
-            self.next_heading = random.randint(0, 359)
+        """if self.last_action == None:
+            self.next_heading = self.makeHeading(heading + random.randint(90, 359))
             if self.fastestDirection(heading, self.next_heading) == aRight:
                 print "Wander Right"
                 self.turnRight()
@@ -461,7 +463,7 @@ class Master:
             last_action = aTurn
             
         elif self.last_action == aTurn:
-            if heading == self.next_heading:
+            if abs(heading - self.next_heading) < 10:
                 print "Wander Forward"
                 self.next_heading == None
                 self.forward()
@@ -473,7 +475,7 @@ class Master:
             if time.time() - self.timer > self.timeout:
                 self.forward(0)
                 self.last_action = None
-
+"""
         return self.state
 
     ####################
@@ -543,6 +545,7 @@ class Master:
         elif state == sLookInCircle: state = self.lookInCircleState(input)
         elif state == sWander: state = self.wanderState(input)
         elif state == sTrackBall: state = self.trackBallState(input)
+	elif state == sFindYellowWall: state = self.findYellowState(input)
         elif state == sEvadeFront: state = self.evadeFrontState(input)
         elif state == sEvadeRight: state = self.evadeRightState(input)
         elif state == sEvadeLeft: state = self.evadeLeftState(input)
@@ -571,7 +574,7 @@ class Master:
         
         # Main Loop
         self.start_time = time.time()
-        self.find_wall_time = self.start_time + 120
+        self.find_wall_time = self.start_time + 180
         print "Starting main loop"
         while True:
             try:
@@ -598,7 +601,7 @@ class Master:
 
                 # Check Image Vision
                 input[kBalls] = self.cv.getBalls()
-                input[kYellow] = self.cv.getYellowWall()
+                #input[kYellow] = self.cv.getYellowWall()
             
                 # Check Heading
                 input [kHeading] = self.checkInt(cHeading)

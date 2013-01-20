@@ -39,7 +39,7 @@ public:
     Scalar bluewallmin=Scalar(201,196,0);
     Scalar bluewallmax=Scalar(205,255,255);
     int yellowwall[2]={56,62};
-    int areafilter=500;
+    int areafilter=250;
     int wallareafilter=500;
     //functions
     Ballfinder(int camera, string portnum, bool show_video);

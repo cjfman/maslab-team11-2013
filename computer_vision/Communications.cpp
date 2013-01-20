@@ -73,7 +73,7 @@ int SocketServer::waitmessage()
            // std::cout << "true";
             sendnow=true;
         }
-        else if(strncmp(incomming_data_buffer, "findwall", 9)==0)
+        else if(strncmp(incomming_data_buffer, "findwall", 8)==0)
         {
           findwall=true;
         }
