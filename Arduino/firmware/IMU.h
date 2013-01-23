@@ -16,6 +16,7 @@ public:
   float getGyroZ();
   int getHeading();
   int getGlobalHeading();
+  //void calcGlobalHeading();
   
 private:
   int global_heading;

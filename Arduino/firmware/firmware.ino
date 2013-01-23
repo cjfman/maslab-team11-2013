@@ -33,6 +33,7 @@
 #define cRightSpeed 302
 #define cLeftSpeed 303
 #define cAutoStop 304
+#define cAngularVelocity 305
 
 unsigned long stop_time;
 void handshake();
@@ -40,6 +41,8 @@ String runCommand(String command);
 String generateResponse(int code, int value);
 String generateResponse(int code, unsigned int value);
 String generateResponse(int code, float value);
+
+void PID();
 
 // Sensors
 String getStatus();
@@ -55,9 +58,11 @@ IMU imu;
 // Motors
 String allStop();
 String setForwardSpeed(long speed);
+int angularVelocity(int a);
 Motor leftMotor;
 Motor rightMotor;
 bool auto_stop = false;
+int angular_velocity = 0;
 
 // Helper
 long asciiToLong(String string);
@@ -188,6 +193,8 @@ String runCommand(String command)
     return generateResponse(code, leftMotor.setSpeed(asciiToLong(parameters)));
   case cAutoStop:
     return "304:" + String(auto_stop = (parameters == "true") ? true : false);
+  case cAngularVelocity:
+    return generateResponse(code, angularVelocity(asciiToLong(parameters)));
   case cRightLimit:
     return generateResponse(code, rightLimit.read());
   case cLeftLimit:
@@ -239,9 +246,27 @@ String allStop()
 
 String setForwardSpeed(long speed)
 {
+  angular_velocity = 0;
   rightMotor.setSpeed(speed);
   leftMotor.setSpeed(speed);
   return "301:" + String(speed);
+}
+
+int angularVelocity(int a)
+{
+  angular_velocity = a;
+  int direction = (a > 0) ? 1 : 0;
+  if (direction)
+  {
+    rightMotor.setSpeed(50);
+    leftMotor.setSpeed(-50);
+  }
+  else
+  {
+    rightMotor.setSpeed(-50);
+    leftMotor.setSpeed(50);
+  }
+  return a;
 }
 
 String runSensorCheck()
@@ -273,6 +298,32 @@ String checkLimitSwitches()
   else
     return "";
 }
+
+/****************************************
+*          PID
+*****************************************/
+
+void PID()
+{
+  // Angular Velocity
+  if (angular_velocity)
+  {
+    int a = abs(imu.getGyroX());
+    int d_a = abs(angular_velocity);
+    int ammount = 5;
+    if (a > d_a)
+    {
+      rightMotor.decrement(ammount);
+      leftMotor.decrement(ammount);
+    }
+    else if (d_a > a)
+    {
+      rightMotor.increment(ammount);
+      leftMotor.increment(ammount);
+    }
+  }
+}
+
 
 long asciiToLong(String string)
 {

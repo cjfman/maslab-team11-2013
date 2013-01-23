@@ -17,12 +17,26 @@ Motor::Motor(int speed_pin, int direction_pin)
 
 int Motor::setSpeed(int speed)
 {
-  int direction = (speed > 0) ? 1 : 0;
+  //this->speed = speed;
+  direction = (speed > 0) ? 1 : 0;
   int abs_speed = abs(speed);
+  this->speed = abs_speed;
   abs_speed = (abs_speed <= 255) ? abs_speed : 255;
   analogWrite(speed_pin, abs_speed);
   digitalWrite(direction_pin, direction);
   return abs_speed;
+}
+
+void Motor::increment(int amount)
+{
+  speed += amount;
+  analogWrite(speed_pin, speed);
+}
+
+void Motor::decrement(int amount)
+{
+  speed -= amount;
+  analogWrite(speed_pin, speed);
 }
 
 void Motor::stop()

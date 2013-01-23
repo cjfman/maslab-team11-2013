@@ -24,8 +24,9 @@ cForwardSpeed = "301" # speed between 0 255
 cRightSpeed = "302"   # speed between 0 255
 cLeftSpeed = "303"    # speed between 0 255
 cAutoStop = "304"
-cMoveDistance = "305" # inches
-cTurn = "306"         # degrees
+cAngularVelocity = "305"
+#cMoveDistance = "305" # inches
+#cTurn = "306"         # degrees
 
 #States
 sStart = "start"
@@ -61,8 +62,8 @@ x=320
 y=240
 
 #Speed Constants
-forward_speed = 50
-turn_speed = 70
+forward_speed = 100
+turn_speed = 80
 
 class ArduinoResetError(Exception):
     def __init__(self, value):
@@ -229,6 +230,9 @@ class Master:
         
         self.sendCommand(cRightSpeed, speed)
         self.sendCommand(cLeftSpeed, -1*speed)
+
+    def angularVelocity(speed, direction):
+        self.sendCommand(cAngularVelocity, speed*direction)
     
     ####################
     ## Other
@@ -369,21 +373,29 @@ class Master:
             
             radius = input[kBalls][1]
             ball_x = input[kBalls][0]
+            self.last_ball_x = ball_x
+            self.last_ball_radius = radius
             print ball_x, radius
             diff = ball_x - self.x
             if abs(diff) < (ball_proximity_th + radius):
                 self.sendCommand(cForwardSpeed, forward_speed)
 
             elif diff > 0:
-                self.turnRight()
+                #self.turnRight()
+                self.angularVelocity(diff/10, 1)
 
             else:
-                self.turnLeft()
+                #self.turnLeft()
+                self.angularVelocity(diff/10, 0)
 
             return self.state
 
         else:
-            return sWander
+            if abs(diff) < (ball_proximity_th + radius):
+                self.sendCommand(cForwardSpeed, forward_speed)
+                time.sleep(1)
+            
+            return sLookInCircle
 
     def findYellowState(self, input):
         evade = self.sensorCheck(input, frontEn = False)

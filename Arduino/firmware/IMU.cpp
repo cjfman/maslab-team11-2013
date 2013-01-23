@@ -86,31 +86,13 @@ int IMU::getHeading()
 
 int IMU::getGlobalHeading()
 {
-  long now = millis();
-  
-  // Get Data
-  float z = getGyroZ();
-  int heading = getHeading();
-  
-  // Calculate Interval and expected change
-  long interval = now - time;
-  time = now;
-  int heading_diff = heading - last_heading;
-  last_heading = heading;
-  
-  // Calculate Gyro change in heading
-  double rotation = interval * z;
-  rotation /= 1000;
-  //int gyro_diff = (int)rotation;
-  //Serial.println(gyro_diff);
-  
-  // Determin Movement
-  if (global_heading >= 360) global_heading -= 360;
-  if (global_heading < 0) global_heading += 360;
-  if (!heading_diff) return global_heading;
-  global_heading += rotation;
   return global_heading;
 }
+
+/*void IMU:calcGlobalHeading()
+{
+  return
+}*/
 
 int IMU::setupL3G4200D(int scale){
   //From  Jim Lindblom of Sparkfun's code

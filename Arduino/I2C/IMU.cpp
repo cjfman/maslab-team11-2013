@@ -75,7 +75,8 @@ float IMU::getGyroZ()
 int IMU::getHeading()
 {
   MagnetometerScaled scaled = compass.ReadScaledAxis();
-  float heading = atan2(scaled.YAxis, scaled.XAxis);
+  //float heading = atan2(scaled.YAxis, scaled.XAxis);
+  float heading = atan2(scaled.ZAxis, scaled.YAxis);
   heading += declinationAngle;
   if(heading < 0) heading += 2*PI;
   if(heading > 2*PI) heading -= 2*PI;
@@ -85,7 +86,8 @@ int IMU::getHeading()
 
 int IMU::getGlobalHeading()
 {
-  long now = millis();
+  return getHeading();
+  /*long now = millis();
   
   // Get Data
   float z = getGyroZ();
@@ -108,7 +110,7 @@ int IMU::getGlobalHeading()
   if (global_heading < 0) global_heading += 360;
   if (!heading_diff) return global_heading;
   global_heading += rotation;
-  return global_heading;
+  return global_heading;*/
 }
 
 int IMU::setupL3G4200D(int scale){
