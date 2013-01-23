@@ -71,16 +71,20 @@ class CVCom:
     def getYellowWall(self):
         if not self.connected:
             return False
-            
-        self.connection.sendall("findwall")
-        data = self.connection.recv(8000)
-        if len(data) == 0 or data == "none":
-                    return False
+        
+        try:   
+            self.connection.sendall("findwall")
+            data = self.connection.recv(8000)
+            if len(data) == 0 or data == "none":
+                        return False
 
-        i = json_data.index(':')
-        x = int(data[i+1:])
-        width = int(data[:i])
-        return (x, width)
+            i = json_data.index(':')
+            x = int(data[i+1:])
+            width = int(data[:i])
+            return (x, width)
+
+        except:
+            return None
 
     def recv_timeout(self, the_socket,timeout=2):
         the_socket.setblocking(0)

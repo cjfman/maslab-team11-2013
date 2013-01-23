@@ -58,7 +58,7 @@ void Ballfinder::findballs()
         cvb::cvLabel(&source, dest, blobs);
         cvb::cvFilterByArea(blobs, areafilter, 1000000);
     }
-    else
+    else if (comms->findwall==true)
     {
         Mat bluewall;
         inRange(HSV, bluewallmin, bluewallmax, bluewall);
@@ -69,25 +69,26 @@ void Ballfinder::findballs()
         // for (iter=blobs.begin(); iter!=blobs.end(); ++iter)
         // {
         //image.at<cv::Vec3b>(x,y)[0] = newval[0];
-        cvb::CvBlob* blob=(blobs.find(cvb::cvLargestBlob(blobs))->second);
+    /*    cvb::CvBlob* blob=(blobs.find(cvb::cvLargestBlob(blobs))->second);
         bool onwall=false;
         for (int x=blob->minx; x<=blob->maxx; ++x)
         {
-            int hue=HSV.at<Vec3b>(x, blob->miny)[0];
+            int hue=HSV.at<Vec3b>(x, blob->miny-5)[0];
             if ((hue>=yellowwall[0])&&(hue<=yellowwall[1])&&onwall==false)
             {
-                onwall=true;
+                //onwall=true;
                 wall_locations.push_back(x);
+		//comms->sendmessage(convertInt(x)+"\n");
             }
             else if ((hue<yellowwall[0])||(hue>yellowwall[1])&&onwall==true)
             {
-                onwall=false;
-                wall_locations.push_back(x-1);
+                //onwall=false;
+                //wall_locations.push_back(x-1);
             }
         }
         // }
         //comms->findwall=false;
-        std::cout << "exiting blue wall code\n";
+        std::cout << "exiting blue wall code\n";*/
     }
     if (show==true)
     {
