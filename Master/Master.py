@@ -63,7 +63,7 @@ y=240
 
 #Speed Constants
 forward_speed = 125
-turn_speed = 60
+turn_speed = 90
 
 class ArduinoResetError(Exception):
     def __init__(self, value):
@@ -231,7 +231,7 @@ class Master:
         self.sendCommand(cRightSpeed, speed)
         self.sendCommand(cLeftSpeed, -1*speed)
 
-    def angularVelocity(speed, direction):
+    def angularVelocity(self, speed, direction):
         self.sendCommand(cAngularVelocity, speed*direction)
     
     ####################
@@ -384,19 +384,18 @@ class Master:
 
             elif diff > 0:
                 #self.turnRight()
-                self.angularVelocity(diff/10, 1)
+                self.angularVelocity(diff/5, -1)
 
             else:
                 #self.turnLeft()
-                self.angularVelocity(diff/10, 0)
+                self.angularVelocity(diff/10, 1)
 
             return self.state
 
         else:
-            if abs(diff) < (ball_proximity_th + radius):
-                self.sendCommand(cForwardSpeed, forward_speed)
-                time.sleep(1)
-            
+            #if abs(diff) < (ball_proximity_th + radius):
+            self.sendCommand(cForwardSpeed, forward_speed)
+            time.sleep(1)
             return sLookInCircle
 
     def findYellowState(self, input):
